@@ -16,8 +16,8 @@ hook.Add( "RegisterSCP", "RegisterSCP1987J", function()
 	RegisterSCP( "SCP1987J", "models/player/charple.mdl", "weapon_scp_1987j", {
 		jump_power = 150,
 		prep_freeze = true,
-		no_select = true, --Cannot be selected in regular rotation
-		dynamic_spawn = true, --Uses dynamic spawn position
+		no_select = true, -- Cannot be selected in regular rotation
+		dynamic_spawn = true, -- Uses dynamic spawn position
 	}, {
 		base_health = { var = 1350, min = 800, max = 2000 },
 		max_health = { var = 1350, min = 800, max = 2000 },

@@ -610,11 +610,6 @@ function GM:PlayerCanHearPlayersVoice( listener, talker )
 		return false
 	end
 
-	--scp
-	if t_tal == TEAM_SCP and t_lis != TEAM_SCP and !talker:GetSCPHuman() and !talker:GetSCPChat() then
-		return false
-	end
-
 	--radio
 	local radio_t = talker:GetWeapon( "item_slc_radio" )
 	local radio_l = listener:GetWeapon( "item_slc_radio" )
