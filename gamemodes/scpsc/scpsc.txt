@@ -1,7 +1,7 @@
-"scplc"
+"scpsc"
 {
 	"base"		"base"
-	"title"		"SCP: Lost Control"
+	"title"		"SCP: Slop Control"
 	"maps"		"gm_site19"
 	"menusystem"	"1"
 	"workshopid"	"2402059605"

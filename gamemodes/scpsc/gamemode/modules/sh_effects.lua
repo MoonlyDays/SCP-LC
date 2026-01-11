@@ -1778,3 +1778,107 @@ hook.Add( "SLCHealed", "SLCEffectsHealed", function( target, healer )
 	target:RemoveEffect( "deep_wounds", true )
 	target:RemoveEffect( "fracture" )
 end )
+
+--[[-------------------------------------------------------------------------
+Frightened (SCP-1987-J)
+---------------------------------------------------------------------------]]
+EFFECTS.RegisterEffect( "frightened", {
+	duration = 3,
+	stacks = 0,
+	tiers = {
+		{ icon = Material( "slc/hud/effects/frightened.png" ) },
+	},
+	cantarget = scp_spec_filter,
+	begin = function( self, ply, tier, args, refresh )
+		if SERVER and !refresh then
+			ply:PushSpeed( 0.7, 0.7, -1, "SLC_Frightened" )
+		end
+
+		if CLIENT then
+			ply:EmitSound( "SLCEffects.Frightened" )
+		end
+	end,
+	finish = function( self, ply, tier, args, interrupt )
+		if SERVER then
+			ply:PopSpeed( "SLC_Frightened" )
+		end
+	end,
+} )
+
+if CLIENT then
+	local frightened_intensity = 0
+	local frightened_shake = 0
+
+	hook.Add( "SLCCalcView", "SLCFrightened", function( ply, view )
+		if !ply.HasEffect then return end
+
+		local has_effect = ply:HasEffect( "frightened" )
+		local target = has_effect and 1 or 0
+
+		frightened_intensity = Lerp( FrameTime() * ( has_effect and 8 or 4 ), frightened_intensity, target )
+
+		if frightened_intensity > 0.01 then
+			frightened_shake = frightened_shake + FrameTime() * 25
+
+			view.angles.roll = view.angles.roll + math.sin( frightened_shake ) * 2 * frightened_intensity
+			view.angles.pitch = view.angles.pitch + math.cos( frightened_shake * 1.3 ) * 1.5 * frightened_intensity
+		end
+	end )
+
+	hook.Add( "SLCScreenMod", "SLCFrightened", function( data )
+		local ply = LocalPlayer()
+		if ply.HasEffect and ply:HasEffect( "frightened" ) then
+			data.contrast = data.contrast * 1.3
+			data.brightness = data.brightness - 0.05
+		end
+	end )
+
+	sound.Add( {
+		name = "SLCEffects.Frightened",
+		volume = 0.8,
+		level = 0,
+		pitch = { 95, 105 },
+		sound = "ambient/machines/thumper_hit.wav",
+		channel = CHAN_STATIC,
+	} )
+end
+
+--[[-------------------------------------------------------------------------
+Blackout (SCP-1987-J Power Outage)
+---------------------------------------------------------------------------]]
+EFFECTS.RegisterEffect( "scp1987j_blackout", {
+	duration = 10,
+	stacks = 0,
+	tiers = {
+		{ icon = Material( "slc/hud/effects/blackout.png" ) },
+	},
+	cantarget = scp_spec_filter,
+	begin = function( self, ply, tier, args, refresh )
+		if CLIENT then
+			ply:SetDSP( 14 )
+		end
+	end,
+	finish = function( self, ply, tier, args, interrupt )
+		if CLIENT then
+			ply:SetDSP( 0 )
+		end
+	end,
+} )
+
+if CLIENT then
+	local blackout_intensity = 0
+
+	hook.Add( "SLCScreenMod", "SCP1987JBlackout", function( data )
+		local ply = LocalPlayer()
+		local has_effect = ply.HasEffect and ply:HasEffect( "scp1987j_blackout" )
+		local target = has_effect and 1 or 0
+
+		blackout_intensity = Lerp( FrameTime() * 4, blackout_intensity, target )
+
+		if blackout_intensity > 0.01 then
+			data.brightness = data.brightness - 0.15 * blackout_intensity
+			data.contrast = data.contrast * ( 1 - 0.3 * blackout_intensity )
+			data.colour = data.colour * ( 1 - 0.5 * blackout_intensity )
+		end
+	end )
+end
