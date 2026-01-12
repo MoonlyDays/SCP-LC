@@ -1,25 +1,20 @@
 IDs = IDs or {}
 InitialIDs = InitialIDs or {}
-
-function UpdatePlayerID( ply )
+function UpdatePlayerID(ply)
 	local lp = LocalPlayer()
-
 	local lpt = lp:SCPTeam()
 	local wep = ply:GetActiveWeapon()
 	local class, team = ply:SCPClass(), ply:SCPTeam()
 	local pclass, pteam = ply:SCPPersona()
-
 	local tc, tt
-
 	if InitialIDs[ply] then
 		tc = "unknown"
 		tt = InitialIDs[ply]
-
 		InitialIDs[ply] = nil
 	end
 
-	if IsValid( wep ) and wep:GetClass() == "item_slc_id" then
-		if SCPTeams.IsAlly( team, lpt ) then
+	if IsValid(wep) and wep:GetClass() == "item_slc_id" then
+		if SCPTeams.IsAlly(team, lpt) then
 			tc = class
 			tt = team
 		else
@@ -31,25 +26,24 @@ function UpdatePlayerID( ply )
 		tt = TEAM_SCP
 	end
 
-	if !tc or !tt then return end
-
+	if not tc or not tt then return end
 	local saved = IDs[ply]
 	if saved and saved.class == tc and saved.team == tt then return end
-
-	print( "Updating ID:", ply, tc )
-	IDs[ply] = { class = tc, team = tt }
+	print("Updating ID:", ply, tc)
+	IDs[ply] = {
+		class = tc,
+		team = tt
+	}
 end
 
-function SetupInitialIDs( tab )
+function SetupInitialIDs(tab)
 	local lp = LocalPlayer()
 	local lp_team = lp:SCPTeam()
 	local _, lp_pteam = lp:SCPPersona()
-
-	for ply, v in pairs( tab ) do
-		if !IsValid( ply ) or ply == lp then continue end
+	for ply, v in pairs(tab) do
+		if not IsValid(ply) or ply == lp then continue end
 		local ply_team = v[1]
 		local ply_pteam = v[2]
-
 		if lp_team == ply_team or lp_pteam == ply_team then
 			InitialIDs[ply] = ply_team
 		elseif lp_team == ply_pteam then
@@ -58,15 +52,17 @@ function SetupInitialIDs( tab )
 	end
 end
 
-function GetPlayerID( ply )
+function GetPlayerID(ply)
 	if ply == LocalPlayer() then
-		return { class = ply:SCPClass(), team = ply:SCPTeam() }
+		return {
+			class = ply:SCPClass(),
+			team = ply:SCPTeam()
+		}
 	end
-
 	return IDs[ply]
 end
 
-function RemovePlayerID( ply )
+function RemovePlayerID(ply)
 	IDs[ply] = nil
 	InitialIDs[ply] = nil
 end
@@ -78,58 +74,46 @@ end
 
 function GM:HUDDrawTargetID()
 	if hud_disabled or ROUND.infoscreen then return end
-
 	local lp = LocalPlayer()
-	if lp:SCPTeam() == TEAM_SPEC and !lp:GetAdminMode() then return end
-
+	if lp:SCPTeam() == TEAM_SPEC and not lp:GetAdminMode() then return end
 	local ply = lp:GetEyeTrace().Entity
-	
-	if !IsValid( ply ) or !ply.IsPlayer or !ply:IsPlayer() or !ply:Alive() or ply:SCPTeam() == TEAM_SPEC then return end
-	if ply:GetPos():DistToSqr( lp:GetPos() ) > 90000 or ply:GetNoDraw() or hook.Run( "CanPlayerSeePlayer", lp, ply ) == false then return end
-
-	if !ply.updated_id then
-		ply.update_id = 0
-	end
-
+	if not IsValid(ply) or not ply.IsPlayer or not ply:IsPlayer() or not ply:Alive() or ply:SCPTeam() == TEAM_SPEC then return end
+	if ply:GetPos():DistToSqr(lp:GetPos()) > 90000 or ply:GetNoDraw() or hook.Run("CanPlayerSeePlayer", lp, ply) == false then return end
+	if not ply.updated_id then ply.update_id = 0 end
 	if ply.update_id < CurTime() then
 		ply.update_id = CurTime() + 1
-		UpdatePlayerID( ply )
+		UpdatePlayerID(ply)
 	end
 
-	if hook.Run( "HUDShouldDraw", "scplc.target" ) == false then return end
-
-	local color = Color( 200, 200, 200, 255 )
+	if hook.Run("HUDShouldDraw", "scplc.target") == false then return end
+	local color = Color(200, 200, 200, 255)
 	local class = nil
-
-	local id = GetPlayerID( ply )
+	local id = GetPlayerID(ply)
 	if id then
-		color = SCPTeams.GetColor( id.team ) or color
+		color = SCPTeams.GetColor(id.team) or color
 		class = id.class or "unknown"
 	end
 
 	local w, h = ScrW(), ScrH()
-
 	draw.Text{
 		text = ply:Nick(),
-		pos = { w * 0.5, h * 0.575 },
+		pos = {w * 0.5, h * 0.575},
 		color = color,
 		font = "SCPHUDSmall",
 		xalign = TEXT_ALIGN_CENTER,
 		yalign = TEXT_ALIGN_BOTTOM,
 	}
 
-	if !class then return end
-
+	if not class then return end
 	local txt = LANG.CLASSES_ID[class] or LANG.CLASSES[class] or class
-
 	if class == "unknown" then
-		local t_name = SCPTeams.GetName( id.team )
+		local t_name = SCPTeams.GetName(id.team)
 		txt = t_name and LANG.UNK_CLASSES[t_name] or txt
 	end
 
 	draw.Text{
 		text = txt,
-		pos = { w * 0.5, h * 0.575 },
+		pos = {w * 0.5, h * 0.575},
 		color = color,
 		font = "SCPHUDSmall",
 		xalign = TEXT_ALIGN_CENTER,
