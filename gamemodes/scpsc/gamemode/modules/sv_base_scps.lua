@@ -278,4 +278,31 @@ hook.Add( "RegisterSCP", "RegisterBaseSCPs", function()
 		base_speed = 215,
 		buff_scale = 0.95,
 	} )
+
+	RegisterSCP( "SCP1987J", "models/cktheamazingfrog/player/freddyar/freddyar.mdl", "weapon_scp_1987j", {
+		jump_power = 150,
+		prep_freeze = true,
+		no_select = true,
+		dynamic_spawn = true,
+	}, {
+		base_health = {
+			var = 1350,
+			min = 800,
+			max = 2000
+		},
+		max_health = {
+			var = 1350,
+			min = 800,
+			max = 2000
+		},
+		base_speed = {
+			var = 185,
+			min = 150,
+			max = 220
+		},
+		buff_scale = 0.8,
+		prot_scale = 0.9,
+	}, nil, function( ply )
+		ply:SetBodygroup( 0, 0 )
+	end )
 end )

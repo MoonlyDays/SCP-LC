@@ -5,13 +5,14 @@ SCI_MODELS_2 = {"models/1000shells/sci/scientists_1.mdl", "models/1000shells/sci
 GUARD_MODELS = {"models/player/alski/security.mdl", "models/player/alski/security2.mdl", "models/player/alski/security3.mdl", "models/player/alski/security4.mdl", "models/player/alski/security5.mdl", "models/player/alski/security6.mdl", "models/player/alski/security7.mdl", "models/player/alski/security8.mdl", "models/player/alski/security9.mdl",}
 MTF_MODELS = {"models/npc/portal/male_02_garde.mdl", "models/npc/portal/male_04_garde.mdl", "models/npc/portal/male_05_garde.mdl", "models/npc/portal/male_06_garde.mdl", "models/npc/portal/male_07_garde.mdl", "models/npc/portal/male_08_garde.mdl", "models/npc/portal/male_09_garde.mdl",}
 CI_MODELS = {"models/player/1000shells/unit_1_ci.mdl", "models/player/1000shells/unit_2_ci.mdl", "models/player/1000shells/unit_3_ci.mdl", "models/player/1000shells/unit_4_ci.mdl", "models/player/1000shells/unit_5_ci.mdl", "models/player/1000shells/unit_6_ci.mdl", "models/player/1000shells/unit_7_ci.mdl", "models/player/1000shells/unit_8_ci.mdl",}
+
 hook.Add("SLCRegisterClassGroups", "BaseGroups", function()
 	AddClassGroup("classd", 49, SPAWN_CLASSD)
 	AddClassGroup("sci", 21, SPAWN_SCIENT)
 	AddClassGroup("guard", 30, SPAWN_GUARD or SPAWN_MTF)
 	AddSupportGroup("mtf_ntf", 60, SPAWN_SUPPORT_MTF, -1, function()
 		SetRoundProperty("mtfs_spawned", true)
-		local num = SLCRandom(3)
+		local num = SLCRandom(4)
 		PlayPA(string.format("scp_lc/announcements/ntf_entered%i.ogg", num), num == 1 and 25 or 12)
 	end)
 
@@ -43,6 +44,19 @@ hook.Add("SLCRegisterClassGroups", "BaseGroups", function()
 
 		SetRoundProperty("SupportTimerOverride", CVAR.slc_alpha1_time_goc:GetInt())
 	end, function() return GetRoundProperty("mtfs_spawned") and not GetRoundProperty("goc_spawned") and not GetRoundStat("omega_warhead") end)
+
+	AddSupportGroup("scp_1987j", 8, SPAWN_SUPPORT_1987J, 1, function()
+		SetRoundProperty("scp_1987j_spawned", true)
+		PlayPA("scp_lc/announcements/freddy_spawn.ogg", 30)
+		for i, v in ipairs(player.GetAll()) do
+			if v:SCPTeam() ~= TEAM_SPEC then v:ChatPrint("[ALERT] Anomalous animatronic entity detected in the facility!") end
+		end
+	end, function()
+		if GetRoundProperty("scp_1987j_spawned") then return false end
+		local round = GetTimer("SLCRound")
+		if not IsValid(round) then return false end
+		return round:GetTime() - round:GetRemainingTime() >= 120
+	end)
 end)
 
 --BASE_WALK_SPEED = 100
@@ -889,6 +903,28 @@ hook.Add("SLCRegisterPlayerClasses", "BaseClasses", function()
 		backpack = "large",
 		spawn_protection = true,
 		callback = function(ply, this) ply:SetProperty("rdm_override", goc_rdm) end,
+	})
+
+	--[[-------------------------------------------------------------------------
+	SCP-1987-J (Freddy Fazbear)
+	---------------------------------------------------------------------------]]
+	RegisterSupportClass("scp_1987j_freddy", "scp_1987j", "", {
+		team = TEAM_SCP,
+		weapons = {},
+		ammo = {},
+		chip = "",
+		omnitool = true,
+		health = 100,
+		walk_speed = 100,
+		run_speed = 225,
+		sanity = 75,
+		vest = nil,
+		max = 0,
+		tier = 0,
+		callback = function(ply, class)
+			local scp = GetSCP("SCP1987J")
+			if scp then scp:SetupPlayer(ply, true, ply:GetPos()) end
+		end
 	})
 end)
 

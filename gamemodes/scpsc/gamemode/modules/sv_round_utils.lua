@@ -599,7 +599,10 @@ Spawn support
 ---------------------------------------------------------------------------]]
 function SpawnSupport(group_override)
 	local queue_size = QueueCheck()
-	if queue_size == 0 then return false end
+	if queue_size == 0 then
+		return false
+	end
+
 	--Get support group and its data
 	local group_name, group_data
 	if group_override then
@@ -628,7 +631,10 @@ function SpawnSupport(group_override)
 
 	if SLC_SUPPORT_OVERRIDE then to_spawn = SLC_SUPPORT_OVERRIDE(to_spawn) end
 	local support_minimum = CVAR.slc_support_minimum:GetInt()
-	if queue_size < support_minimum then return false end
+	if queue_size < support_minimum then
+		return false
+	end
+
 	max = to_spawn
 	print("Spawning support", group_name)
 	--Assign players to classes

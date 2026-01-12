@@ -307,6 +307,8 @@ effects.ephedrine = "Ephedrine"
 effects.hemostatic = "Hemostatic"
 effects.antidote = "Antidote"
 effects.poison_syringe = "Poison"
+effects.frightened = "Frightened"
+effects.scp1987j_blackout = "Blackout"
 
 --[[-------------------------------------------------------------------------
 Class viewer
@@ -802,6 +804,8 @@ classes.SCP939 = "SCP-939"
 classes.SCP966 = "SCP-966"
 classes.SCP3199 = "SCP-3199"
 classes.SCP24273 = "SCP-2427-3"
+classes.SCP1987J = "SCP-1987-J"
+classes.scp_1987j_freddy = "SCP-1987-J"
 
 classes.classd = "Class D"
 classes.veterand = "Class D Veteran"
@@ -1056,6 +1060,14 @@ lang.CLASS_OBJECTIVES = {
 	SCP24273 = generic_scp,
 
 	SCP3199 = generic_scp,
+
+	SCP1987J = [[- Escape from the facility
+- Cooperate with other SCPs
+- Hunt down personnel with jumpscare attacks]],
+
+	scp_1987j_freddy = [[- Escape from the facility
+- Cooperate with other SCPs
+- Hunt down personnel with jumpscare attacks]],
 }
 
 lang.CLASS_DESCRIPTION = {
@@ -2898,6 +2910,23 @@ wep.SCP3199 = {
 			info = "Instantly spawn new egg. This ability can exceed eggs limit",
 		},
 	}
+}
+
+wep.SCP1987J = {
+	name = "SCP-1987-J",
+	desc = "Freddy Fazbear - An anomalous animatronic entity",
+	jumpscare = {
+		name = "Jumpscare",
+		desc = "Close-range attack that deals damage and applies the Frightened effect, slowing and disorienting the target.",
+	},
+	power_outage = {
+		name = "Power Outage",
+		desc = "Disable lights in the area, reducing visibility for nearby humans.",
+	},
+	showtime = {
+		name = "Showtime!",
+		desc = "Become invulnerable and immobile for 3 seconds, then release a devastating burst attack that damages and frightens all nearby enemies.",
+	},
 }
 
 wep.SCP009 = {

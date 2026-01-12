@@ -142,7 +142,10 @@ ObjectSCP = {
 - Dynamic buff system outside facility
 - Protection/buff scaling based on round progress
 
-**Registered SCPs:** 173, 049, 0492, 058, 066, 096, 106, 242-73, 3199, 457, 682, 860-2, 939, 966
+**Registered SCPs:** 023, 049, 0492, 058, 066, 096, 106, 173, 457, 682, 860-2, 939, 966, 2427-3, 3199, 1987-J
+
+**Support SCPs:** Some SCPs spawn as support groups rather than at round start:
+- SCP-1987-J (Freddy Fazbear) - Joke SCP that spawns after 2 minutes into the round
 
 ### Player Class System (`sh_classes.lua`, `sv_player.lua`)
 
@@ -347,19 +350,57 @@ SLCVersion(signature)  -- e.g., "b001101r2"
 ## Extension Points
 
 ### Adding New SCPs
+
+**IMPORTANT:** Add new SCPs directly to the main gamemode files, NOT in separate `lua/autorun/` files. Separate autorun files may not load in the correct order and can cause registration failures.
+
+**Required files to modify:**
+1. `modules/sv_base_scps.lua` - Add `RegisterSCP()` call
+2. `mapconfigs/gm_site19.lua` - Add spawn position (e.g., `SPAWN_SCP_XXXX`)
+3. `languages/english.lua` - Add class name, objectives, weapon descriptions, effects
+4. `entities/weapons/weapon_scp_xxxx.lua` - Create the SWEP
+
+**For Support SCPs** (spawn mid-round like SCP-1987-J):
+1. Also add to `modules/sh_base_classes.lua`:
+   - `AddSupportGroup()` - Defines spawn timing and conditions
+   - `RegisterSupportClass()` - Defines the player class
+2. Add spawn position like `SPAWN_SUPPORT_XXXX` in map config
+
 ```lua
--- In lua/autorun/server/my_scps.lua
-hook.Add("RegisterSCP", "CustomSCPs", function()
-    RegisterSCP("SCP-XXXX", "models/...", "weapon_scp_xxxx", {
-        max_health = 2000,
-        base_speed = 180,
-        -- ... more stats
-    }, {
-        -- Dynamic stats function
-    }, function(ply, basestats)
-        -- Setup callback
-    end)
+-- In modules/sv_base_scps.lua (inside the RegisterSCP hook)
+RegisterSCP("SCP_XXXX", "models/...", "weapon_scp_xxxx", {
+    jump_power = 200,
+    prep_freeze = true,
+    no_select = true,      -- For support SCPs only
+    dynamic_spawn = true,  -- For support SCPs only
+}, {
+    base_health = 2000,
+    max_health = 2000,
+    base_speed = 180,
+}, nil, function(ply)
+    -- Post-setup callback
 end)
+```
+
+**For Support SCP class registration** (in `sh_base_classes.lua`):
+```lua
+-- Add support group (when/how they spawn)
+AddSupportGroup("scp_xxxx", weight, SPAWN_SUPPORT_XXXX, max_players, function()
+    -- Spawn callback (announcements, round properties)
+end, function()
+    -- Spawn condition (return true to allow spawn)
+    return round_time >= 120
+end)
+
+-- Register the support class
+RegisterSupportClass("scp_xxxx_class", "scp_xxxx", "models/...", {
+    team = TEAM_SCP,
+    name = "SCP_XXXX",
+    health = 1500,
+    callback = function(ply, class)
+        local scp = GetSCP("SCP_XXXX")
+        if scp then scp:SetupPlayer(ply, true, ply:GetPos()) end
+    end
+})
 ```
 
 ### Adding New Classes
@@ -409,7 +450,9 @@ Create `gamemodes/scplc/gamemode/mapconfigs/<mapname>.lua` with:
 - `core/player.lua` - Player meta table extensions
 - `modules/sv_round.lua` - Round management
 - `modules/sv_scp.lua` - SCP registration system
+- `modules/sv_base_scps.lua` - All SCP definitions
 - `modules/sh_classes.lua` - Class system
+- `modules/sh_base_classes.lua` - All class/support group definitions
 - `modules/sv_items.lua` - Item registry
 - `modules/sv_looting.lua` - Loot generation
 - `modules/sv_game_events.lua` - Event tracking
