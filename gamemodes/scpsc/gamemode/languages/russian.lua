@@ -298,6 +298,8 @@ effects.scp009 = "SCP-009"
 effects.scp106_withering = "Иссушение"
 effects.scp966_effect = "Тошнота"
 effects.scp966_mark = "Метка Смерти"
+effects.scp808j_deafened = "Оглушён"
+effects.scp808j_canceled = "Отменён"
 
 --[[-------------------------------------------------------------------------
 Class viewer
@@ -773,6 +775,8 @@ classes.SCP939 = "SCP-939"
 classes.SCP966 = "SCP-966"
 classes.SCP3199 = "SCP-3199"
 classes.SCP24273 = "SCP-2427-3"
+classes.SCP808J = "SCP-808-J"
+classes.SCP1983J = "SCP-1983-J"
 
 classes.classd = "Класс D"
 classes.veterand = "Ветеран класса D"
@@ -785,6 +789,7 @@ classes.classd_prestige = "Костюмер класса D"
 classes.sciassistant = "Учёный-ассистент"
 classes.sci = "Учёный"
 classes.seniorsci = "Старший учёный"
+classes.bikovsci = "Андрей Евгеньевич"
 classes.headsci = "Главный учёный"
 classes.contspec = "Специалист по содержанию"
 classes.sci_prestige = "Беглец класса D"
@@ -1027,6 +1032,15 @@ lang.CLASS_OBJECTIVES = {
 	SCP24273 = generic_scp,
 
 	SCP3199 = generic_scp,
+
+	SCP808J = [[- Сотрудничайте с другими SCP
+- Переключайтесь между Добрым и Злым режимами
+- Охотьтесь на персонал]],
+
+	SCP1983J = [[- Сотрудничайте с другими SCP
+- Охотьтесь на назначенную цель для мгновенного убийства
+- Убийство целей увеличивает урон навсегда
+- Используйте аудио-атаку для дезориентации врагов]],
 }
 
 lang.CLASS_DESCRIPTION = {

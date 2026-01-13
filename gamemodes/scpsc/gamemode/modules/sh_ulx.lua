@@ -141,6 +141,42 @@ function InitializeSCPULX()
 	spawnsupport:setOpposite("ulx silent spawn_support", {nil, nil, true})
 	spawnsupport:defaultAccess(ULib.ACCESS_SUPERADMIN)
 	spawnsupport:help("Spawns support")
+
+	function ulx.forcespawnsupport(ply, name, amount, silent)
+		local success, result = ForceSpawnSupport(name, amount > 0 and amount or nil)
+		if success then
+			if silent then
+				ulx.fancyLogAdmin(ply, true, "#A force spawned support #s (#i players)", name, result)
+			else
+				ulx.fancyLogAdmin(ply, "#A force spawned support #s (#i players)", name, result)
+			end
+		else
+			ULib.tsayError(ply, "Failed to force spawn support '" .. name .. "': " .. (result or "Unknown error"), true)
+		end
+	end
+
+	local forcespawnsupport = ulx.command(ULX_CAT, "ulx force_spawn_support", ulx.forcespawnsupport, "!forcespawnsupport")
+	forcespawnsupport:addParam{
+		type = ULib.cmds.StringArg,
+		hint = "Support name",
+		completes = support_groups
+	}
+	forcespawnsupport:addParam{
+		type = ULib.cmds.NumArg,
+		hint = "Amount (0 = all available)",
+		default = 0,
+		min = 0,
+		max = 32,
+		ULib.cmds.optional
+	}
+	forcespawnsupport:addParam{
+		type = ULib.cmds.BoolArg,
+		invisible = true
+	}
+	forcespawnsupport:setOpposite("ulx silent force_spawn_support", {nil, nil, nil, true})
+	forcespawnsupport:defaultAccess(ULib.ACCESS_SUPERADMIN)
+	forcespawnsupport:help("Force spawns support (bypasses queue/minimum requirements)")
+
 	function ulx.slcxp(ply, plyt, xp, silent)
 		if not isnumber(xp) then return end
 		plyt:AddXP(xp, "cmd")

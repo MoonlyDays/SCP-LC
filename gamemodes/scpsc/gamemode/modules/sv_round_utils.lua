@@ -778,6 +778,153 @@ function SpawnSupport(group_override)
 end
 
 --[[-------------------------------------------------------------------------
+Force spawn support (bypasses all requirements)
+---------------------------------------------------------------------------]]
+function ForceSpawnSupport(group_name, amount)
+	if not group_name then return false, "No group specified" end
+
+	local group_data = GetSupportData(group_name)
+	if not group_data then return false, "Invalid support group" end
+
+	local classes, spawn_info = GetSupportGroup(group_name)
+	if not classes or not spawn_info then return false, "Invalid support group data" end
+
+	-- Gather all valid spectators (bypass queue system)
+	local available_players = {}
+	for _, ply in ipairs(player.GetAll()) do
+		if ply:IsValidSpectator(true, true) then
+			table.insert(available_players, ply)
+		end
+	end
+
+	if #available_players == 0 then
+		return false, "No valid spectators available"
+	end
+
+	-- Determine spawn amount
+	local to_spawn = amount or #available_players
+	to_spawn = math.min(to_spawn, #available_players)
+
+	if to_spawn <= 0 then
+		return false, "Invalid spawn amount"
+	end
+
+	print("Force spawning support", group_name, "amount:", to_spawn)
+
+	-- Assign players to classes
+	local assigned_classes = {}
+	local classes_in_use = {}
+	local select_groups = {}
+	local max = to_spawn
+
+	for i = 1, to_spawn do
+		local ply = available_players[i]
+		if not IsValid(ply) then continue end
+
+		-- Remove from queue if present
+		for qi, qp in ipairs(queue) do
+			if qp == ply then
+				table.remove(queue, qi)
+				queue_lookup[ply] = nil
+				break
+			end
+		end
+		for qi, qp in ipairs(suicide_queue) do
+			if qp == ply then
+				table.remove(suicide_queue, qi)
+				queue_lookup[ply] = nil
+				suicide_queue_sid[ply:SteamID64()] = nil
+				break
+			end
+		end
+
+		-- Get available classes (ignore unlock requirements for force spawn)
+		local available_classes = { total_weight = 0 }
+		for class_name, class in pairs(classes) do
+			local weight = class.weight or class.tier and (class.tier + 1) or 1
+			if weight and weight > 0 then
+				available_classes.total_weight = available_classes.total_weight + weight
+				table.insert(available_classes, { value = class_name, weight = weight })
+			end
+		end
+
+		if available_classes.total_weight <= 0 then continue end
+
+		-- Select class
+		local class_name, select_group_name, slots
+		repeat
+			local tmp_class_name = select_weighted(available_classes)
+			local tmp_class_tab = classes[tmp_class_name]
+			local tmp_class_sg = tmp_class_tab.select_group or tmp_class_name
+			if not classes_in_use[tmp_class_name] then classes_in_use[tmp_class_name] = 0 end
+			if not select_groups[tmp_class_sg] then select_groups[tmp_class_sg] = 0 end
+			slots = tmp_class_tab.slots or 1
+
+			local override = tmp_class_tab.select_override and tmp_class_tab.select_override(tmp_class_name, classes_in_use[tmp_class_name], select_groups[tmp_class_sg], max)
+			if override == true or override == nil and to_spawn - slots >= 0 and (not tmp_class_tab.max or tmp_class_tab.max == 0 or classes_in_use[tmp_class_name] < tmp_class_tab.max and select_groups[tmp_class_sg] < tmp_class_tab.max) then
+				class_name = tmp_class_name
+				select_group_name = tmp_class_sg
+			end
+		until class_name or #available_classes == 0
+
+		if class_name then
+			to_spawn = to_spawn - (slots or 1)
+			assigned_classes[ply] = class_name
+			classes_in_use[class_name] = classes_in_use[class_name] + 1
+			select_groups[select_group_name] = select_groups[select_group_name] + 1
+		end
+	end
+
+	local count = table.Count(assigned_classes)
+	if count == 0 then
+		return false, "Failed to assign any players"
+	end
+
+	-- Spawn all players
+	local spawned = {}
+	local spawned_plys = {}
+	local class_spawns = {}
+	local spawns = copy_spawns(spawn_info)
+
+	for ply, class_name in pairs(assigned_classes) do
+		local class_data = classes[class_name]
+		local pos
+
+		if class_data.spawn then
+			if istable(class_data.spawn) then
+				if not class_spawns[class_name] or #class_spawns[class_name] == 0 then
+					class_spawns[class_name] = copy_spawns(class_data.spawn, class_spawns[class_name])
+				end
+				pos = table.remove(class_spawns[class_name], SLCRandom(#class_spawns[class_name]))
+			else
+				pos = class_data.spawn
+			end
+		else
+			if #spawns == 0 then spawns = copy_spawns(spawn_info, spawns) end
+			pos = table.remove(spawns, SLCRandom(#spawns))
+		end
+
+		print("Force assigning '" .. ply:Nick() .. "' to support class '" .. class_name .. "' [" .. group_name .. "]")
+		ply:SetupPlayer(class_data, pos)
+		table.insert(spawned_plys, ply)
+		spawned[ply] = { class_data.team, class_data.persona and class_data.persona.team or class_data.team }
+	end
+
+	if group_data.callback then group_data.callback() end
+
+	AddTimer("SupportInitialIDs", INFO_SCREEN_DURATION + 1, 1, function()
+		net.Start("InitialIDs")
+		net.WriteTable(spawned)
+		net.Send(spawned_plys)
+	end)
+
+	SetupSupportTimer()
+	QueueUpdate()
+
+	return true, count
+end
+
+--[[-------------------------------------------------------------------------
 Escape system
 ---------------------------------------------------------------------------]]
 ESCAPE_STATUS = ESCAPE_STATUS or 0 -- 0 - no escape; 1 - escape; 2 - blocked;

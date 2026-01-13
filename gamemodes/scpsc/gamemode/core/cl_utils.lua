@@ -1,22 +1,25 @@
-local color_white = Color( 255, 255, 255 )
+local color_white = Color(255, 255, 255)
 --[[-------------------------------------------------------------------------
 Player message
 ---------------------------------------------------------------------------]]
 CENTERINFO = {}
-
-local function add_text( txt, clr, c )
+local function add_text(txt, clr, c)
 	if c then
-		CENTERINFO = { text = txt, color = clr or color_white, time = CurTime() + 3 }
+		CENTERINFO = {
+			text = txt,
+			color = clr or color_white,
+			time = CurTime() + 3
+		}
 	else
 		if clr then
-			chat.AddText( clr, txt )
+			chat.AddText(clr, txt)
 		else
-			chat.AddText( txt )
+			chat.AddText(txt)
 		end
 	end
 end
 
-/*---------------------------------------------------------------------------
+--[[---------------------------------------------------------------------------
 PlayerMessage( msg, ply, center )
 
 Powerful function that draws translated text in chat or on screen center (will always last for 3 seconds, and new message will replace old one)
@@ -37,125 +40,97 @@ Message structure:
 	Example: "nregistry_key$value1,@sometab.somevalue" is equal to string.format( "nregistry_value", value1, LANG.sometab.somevalue )
 	5. RAW text: if one of arguments after '$' will be 'raw:sometext' then 'sometext' will be saved as RAW text. After processing whole message
 	every '[RAW]' markdown will be replaced with RAW text. NOTE: Every '.' in RAW text will be replaced with ','
----------------------------------------------------------------------------*/
-function PlayerMessage( msg, ply, center )
-	if ply and ply != LocalPlayer() then return end
-
-	//print( msg )
+---------------------------------------------------------------------------]]
+function PlayerMessage(msg, ply, center)
+	if ply and ply ~= LocalPlayer() then return end
+	--print( msg )
 	local color = nil
-	local nmsg, cr, cg, cb = string.match( msg, "^(.-)%#(%d+)%,(%d*)%,(%d*)$" )
+	local nmsg, cr, cg, cb = string.match(msg, "^(.-)%#(%d+)%,(%d*)%,(%d*)$")
 	if nmsg then
-		cr = tonumber( cr )
-
-		if cr then
-			color = Color( cr, tonumber( cg ) or cr, tonumber( cb ) or cr )
-		end
-
+		cr = tonumber(cr)
+		if cr then color = Color(cr, tonumber(cg) or cr, tonumber(cb) or cr) end
 		msg = nmsg
 	end
 
-	local name, func = string.match( msg, "^(.-)$(.+)" )
+	local name, func = string.match(msg, "^(.-)$(.+)")
 	local rawtext = ""
-
 	if name then
 		local args = {}
-
-		for v in string.gmatch( func, "[^,]+" ) do
-			local raw = string.match( v, "raw:(.+)" )
+		for v in string.gmatch(func, "[^,]+") do
+			local raw = string.match(v, "raw:(.+)")
 			if raw then
-				rawtext = string.gsub( raw, "%.", "," )
+				rawtext = string.gsub(raw, "%.", ",")
 				continue
 			end
-			
-			local tabinfo = string.match( v, "^@(.+)$" )
+
+			local tabinfo = string.match(v, "^@(.+)$")
 			if tabinfo then
 				local tab = LANG
-
 				if tabinfo then
-					for subtable in string.gmatch( tabinfo, "[^%.]+" ) do
-						if !istable( tab ) or !tab[subtable] then
-							break
-						end
-
+					for subtable in string.gmatch(tabinfo, "[^%.]+") do
+						if not istable(tab) or not tab[subtable] then break end
 						tab = tab[subtable]
 					end
 				end
 
-				table.insert( args, !istable( tab ) and tab or tabinfo )
+				table.insert(args, not istable(tab) and tab or tabinfo)
 			else
-				table.insert( args, v )
+				table.insert(args, v)
 			end
 		end
 
 		local translated
-		local tabinfo = string.match( name, "^@(.+)$" )
+		local tabinfo = string.match(name, "^@(.+)$")
 		if tabinfo then
 			local tab = LANG
-
 			if tabinfo then
-				for subtable in string.gmatch( tabinfo, "[^%.]+" ) do
-					if !istable( tab ) or !tab[subtable] then
-						break
-					end
-
+				for subtable in string.gmatch(tabinfo, "[^%.]+") do
+					if not istable(tab) or not tab[subtable] then break end
 					tab = tab[subtable]
 				end
 			end
 
-			if !istable( tab ) then
-				translated = tab
-			end
+			if not istable(tab) then translated = tab end
 		else
 			translated = LANG.NRegistry[name]
 		end
 
 		local text = ""
-		if !translated then
-			text = string.format( LANG.NFailed, tostring( name ) )
+		if not translated then
+			text = string.format(LANG.NFailed, tostring(name))
 		else
-			translated = string.gsub( translated, "%[RAW%]", rawtext )
-		 	text = string.format( translated, unpack( args ) )
+			translated = string.gsub(translated, "%[RAW%]", rawtext)
+			text = string.format(translated, unpack(args))
 		end
 
-		text = RestoreMessage( text )
-
-		add_text( text, color, center )
-		print( text )
+		text = RestoreMessage(text)
+		add_text(text, color, center)
+		print(text)
 	else
 		local text
-		local tabinfo = string.match( msg, "^@(.+)$" )
+		local tabinfo = string.match(msg, "^@(.+)$")
 		if tabinfo then
 			local tab = LANG
-
 			if tabinfo then
-				for subtable in string.gmatch( tabinfo, "[^%.]+" ) do
-					if !istable( tab ) or !tab[subtable] then
-						break
-					end
-
+				for subtable in string.gmatch(tabinfo, "[^%.]+") do
+					if not istable(tab) or not tab[subtable] then break end
 					tab = tab[subtable]
 				end
 			end
 
-			if !istable( tab ) then
-				text = tab
-			end
+			if not istable(tab) then text = tab end
 		else
 			text = LANG.NRegistry[msg]
 		end
 
-		if !text then
-			text = string.format( LANG.NFailed, tostring( msg ) )
-		end
-
-		text = RestoreMessage( text )
-
-		add_text( text, color, center )
-		print( text )
+		if not text then text = string.format(LANG.NFailed, tostring(msg)) end
+		text = RestoreMessage(text)
+		add_text(text, color, center)
+		print(text)
 	end
 end
 
-hook.Add( "HUDPaint", "CenterPlayerMessage", function()
+hook.Add("HUDPaint", "CenterPlayerMessage", function()
 	if CENTERINFO.text then
 		if CENTERINFO.time < CurTime() then
 			CENTERINFO = {}
@@ -164,20 +139,20 @@ hook.Add( "HUDPaint", "CenterPlayerMessage", function()
 
 		draw.Text{
 			text = CENTERINFO.text,
-			pos = { ScrW() * 0.5, ScrH() * 0.4 },
+			pos = {ScrW() * 0.5, ScrH() * 0.4},
 			color = CENTERINFO.color,
 			font = "SCPHUDSmall",
 			xalign = TEXT_ALIGN_CENTER,
 			yalign = TEXT_ALIGN_CENTER,
 		}
 	end
-end )
+end)
+
 --[[-------------------------------------------------------------------------
 CenterMessage
 ---------------------------------------------------------------------------]]
 CENTERMESSAGES = {}
-
-/*---------------------------------------------------------------------------
+--[[---------------------------------------------------------------------------
 CenterMessage( msg, ply )
 
 Powerful function that draws translated text on screen center.
@@ -205,142 +180,109 @@ Message structure:
 	Example: 'ncregistry_key$value1,value2#255,0,0;another_ncregistry_key$value3;3rd_ncregistry_key#0,0,255,Font2';font:Font1 - 1st and 2nd row will be drawn with Font1,
 	3rd one with Font2
 	8. Each text line can specify font override. See example above
----------------------------------------------------------------------------*/
-function CenterMessage( msg, ply )
-	if ply and ply != LocalPlayer() then return end
-
+---------------------------------------------------------------------------]]
+function CenterMessage(msg, ply)
+	if ply and ply ~= LocalPlayer() then return end
 	local gfont = "SCPHUDMedium"
-	//local gcolor = Color( 255, 255, 255 )
+	--local gcolor = Color( 255, 255, 255 )
 	local time = 10
 	local yoffset = 0
 	local lines = {}
-
-	for s in string.gmatch( msg, "[^;]+" ) do
+	for s in string.gmatch(msg, "[^;]+") do
 		local line = {}
-
-		local g = string.match( s, "^font:([%w%p]+)$" )
+		local g = string.match(s, "^font:([%w%p]+)$")
 		if g then
 			gfont = g
 			continue
 		end
 
-		local t = string.match( s, "^time:(%d+)$" )
+		local t = string.match(s, "^time:(%d+)$")
 		if t then
-			time = tonumber( t )
+			time = tonumber(t)
 			continue
 		end
 
-		local yoff = string.match( s, "^offset:(-?%d+)$" )
+		local yoff = string.match(s, "^offset:(-?%d+)$")
 		if yoff then
-			yoffset = tonumber( yoff ) / 1000
+			yoffset = tonumber(yoff) / 1000
 			continue
 		end
 
-		/*local gclr = string.match( s, "^offset:(%d+)$" )
+		--[[local gclr = string.match( s, "^offset:(%d+)$" )
 		if gclr then
 			
-		end*/
-
-		local nmsg, cr, cg, cb, f = string.match( s, "^(.-)%#(%d*),(%d*),(%d*),([%w%p]*)$" )
-
-		if !nmsg then
-			nmsg, cr, cg, cb = string.match( s, "^(.-)%#(%d*),(%d*),(%d*)$" )
-		end
-
+		end]]
+		local nmsg, cr, cg, cb, f = string.match(s, "^(.-)%#(%d*),(%d*),(%d*),([%w%p]*)$")
+		if not nmsg then nmsg, cr, cg, cb = string.match(s, "^(.-)%#(%d*),(%d*),(%d*)$") end
 		if nmsg then
-			cr = tonumber( cr )
-
-			if cr then
-				line.color = Color( cr, tonumber( cg ) or cr, tonumber( cb ) or cr )
-			end
-
-			if f and f != "" then
-				line.font = f or gfont
-			end
-
+			cr = tonumber(cr)
+			if cr then line.color = Color(cr, tonumber(cg) or cr, tonumber(cb) or cr) end
+			if f and f ~= "" then line.font = f or gfont end
 			s = nmsg
 		end
 
-		local name, func = string.match( s, "^(.-)$(.+)" )
+		local name, func = string.match(s, "^(.-)$(.+)")
 		local rawtext = ""
-
 		if name then
 			local args = {}
-
-			for v in string.gmatch( func, "[^,]+" ) do
-				local raw = string.match( v, "raw:(.+)" )
+			for v in string.gmatch(func, "[^,]+") do
+				local raw = string.match(v, "raw:(.+)")
 				if raw then
-					rawtext = string.gsub( raw, "%.", "," )
+					rawtext = string.gsub(raw, "%.", ",")
 					continue
 				end
 
-				local tabinfo = string.match( v, "^@(.+)$" )
+				local tabinfo = string.match(v, "^@(.+)$")
 				if tabinfo then
 					local tab = LANG
-
 					if tabinfo then
-						for subtable in string.gmatch( tabinfo, "[^%.]+" ) do
-							if !istable( tab ) or !tab[subtable] then
-								break
-							end
-
+						for subtable in string.gmatch(tabinfo, "[^%.]+") do
+							if not istable(tab) or not tab[subtable] then break end
 							tab = tab[subtable]
 						end
 					end
 
-					table.insert( args, !istable( tab ) and tab or tabinfo )
+					table.insert(args, not istable(tab) and tab or tabinfo)
 				else
-					table.insert( args, v )
+					table.insert(args, v)
 				end
 			end
 
 			local translated
-			local tabinfo = string.match( name, "^@(.+)$" )
+			local tabinfo = string.match(name, "^@(.+)$")
 			if tabinfo then
 				local tab = LANG
-
 				if tabinfo then
-					for subtable in string.gmatch( tabinfo, "[^%.]+" ) do
-						if !istable( tab ) or !tab[subtable] then
-							break
-						end
-
+					for subtable in string.gmatch(tabinfo, "[^%.]+") do
+						if not istable(tab) or not tab[subtable] then break end
 						tab = tab[subtable]
 					end
 				end
 
-				if !istable( tab ) then
-					translated = tab
-				end
+				if not istable(tab) then translated = tab end
 			else
 				translated = LANG.NCRegistry[name]
 			end
 
 			if translated then
-				translated = string.gsub( translated, "%[RAW%]", rawtext )
-			 	line.txt = string.format( translated, unpack( args ) )
+				translated = string.gsub(translated, "%[RAW%]", rawtext)
+				line.txt = string.format(translated, unpack(args))
 			else
-				print( string.format( LANG.NCFailed, tostring( name ) ) )
+				print(string.format(LANG.NCFailed, tostring(name)))
 			end
 		else
 			local text
-			local tabinfo = string.match( s, "^@(.+)$" )
+			local tabinfo = string.match(s, "^@(.+)$")
 			if tabinfo then
 				local tab = LANG
-
 				if tabinfo then
-					for subtable in string.gmatch( tabinfo, "[^%.]+" ) do
-						if !istable( tab ) or !tab[subtable] then
-							break
-						end
-
+					for subtable in string.gmatch(tabinfo, "[^%.]+") do
+						if not istable(tab) or not tab[subtable] then break end
 						tab = tab[subtable]
 					end
 				end
 
-				if !istable( tab ) then
-					text = tab
-				end
+				if not istable(tab) then text = tab end
 			else
 				text = LANG.NCRegistry[s]
 			end
@@ -348,38 +290,42 @@ function CenterMessage( msg, ply )
 			if text then
 				line.txt = text
 			else
-				print( string.format( LANG.NCFailed, tostring( s ) ) )
+				print(string.format(LANG.NCFailed, tostring(s)))
 			end
 		end
 
-		if line.txt and line.txt != "" then
-			line.txt = RestoreMessage( line.txt )
-			table.insert( lines, line )
+		if line.txt and line.txt ~= "" then
+			line.txt = RestoreMessage(line.txt)
+			table.insert(lines, line)
 		end
 	end
 
-	table.insert( CENTERMESSAGES, { time = 0, duration = time, font = gfont, yoffset = yoffset, lines = lines } )
+	table.insert(CENTERMESSAGES, {
+		time = 0,
+		duration = time,
+		font = gfont,
+		yoffset = yoffset,
+		lines = lines
+	})
 end
 
-hook.Add( "HUDPaint", "CenterMessage", function()
+hook.Add("HUDPaint", "CenterMessage", function()
 	if #CENTERMESSAGES > 0 then
 		local msg = CENTERMESSAGES[1]
 		local time = msg.time
-
 		if time == 0 then
 			msg.time = CurTime() + msg.duration
 		elseif time < CurTime() then
-			table.remove( CENTERMESSAGES, 1 )
+			table.remove(CENTERMESSAGES, 1)
 			return
 		end
 
 		local w, h = ScrW(), ScrH()
-
-		local y = h * ( 0.3 + msg.yoffset )
-		for k, v in pairs( msg.lines ) do
+		local y = h * (0.3 + msg.yoffset)
+		for k, v in pairs(msg.lines) do
 			local _, th = draw.Text{
 				text = v.txt,
-				pos = { w * 0.5, y },
+				pos = {w * 0.5, y},
 				color = v.color or color_white,
 				font = v.font or msg.font,
 				xalign = TEXT_ALIGN_CENTER,
@@ -389,36 +335,24 @@ hook.Add( "HUDPaint", "CenterMessage", function()
 			y = y + th
 		end
 	end
-end )
+end)
 
-function util.ParseLangKey( key )
-	if !key then return end
-
-	local tabinfo, args = string.match( key, "^@(.+):(.+)$" )
-	if !tabinfo then
-		tabinfo = string.match( key, "^@(.+)$" ) or key
-	end
-
+function util.ParseLangKey(key)
+	if not key then return end
+	local tabinfo, args = string.match(key, "^@(.+):(.+)$")
+	if not tabinfo then tabinfo = string.match(key, "^@(.+)$") or key end
 	local tab = LANG
-
 	if tabinfo then
-		for subtable in string.gmatch( tabinfo, "[^%.]+" ) do
-			if !istable( tab ) then
-				break
-			end
-
+		for subtable in string.gmatch(tabinfo, "[^%.]+") do
+			if not istable(tab) then break end
 			tab = tab[subtable]
 		end
 
-		if isstring( tab ) then
-			if args then
-				tab = string.format( tab, unpack( string.Explode( ",", args ) ) )
-			end
-
+		if isstring(tab) then
+			if args then tab = string.format(tab, unpack(string.Explode(",", args))) end
 			return tab
 		end
 	end
-
 	return tabinfo
 end
 
@@ -428,7 +362,6 @@ Wheel menu
 local wheel_visible = false
 local wheel_options = {}
 local wheel_cb, wheel_sc
-
 --[[-------------------------------------------------------------------------
 OpenWheelMenu( options, cb, sc )
 
@@ -449,27 +382,26 @@ Wheel menu. Used by SCP 049
 @param		[function]		sc					Optional: Called each frame - return true to close wheel menu
 
 @return		[nil]			-					-
--------------------------------------------------------------------------]]--
-function OpenWheelMenu( options, cb, sc, exmat )
+-------------------------------------------------------------------------]]
+--
+function OpenWheelMenu(options, cb, sc, exmat)
 	if wheel_visible then return end
-
-	wheel_options = table.Copy( options )
-	table.insert( wheel_options, 1, {
+	wheel_options = table.Copy(options)
+	table.insert(wheel_options, 1, {
 		mat = exmat,
 		name = LANG.exit
-	} )
+	})
 
 	local max_w = ScrW() * 0.25
-	for i, v in ipairs( wheel_options ) do
-		if !v.desc then continue end
-
-		v.desc = markup.Parse( "<font=SCPHUDSmall>"..v.desc.."</font>", max_w )
+	for i, v in ipairs(wheel_options) do
+		if not v.desc then continue end
+		v.desc = markup.Parse("<font=SCPHUDSmall>" .. v.desc .. "</font>", max_w)
 	end
 
 	wheel_cb = cb
 	wheel_sc = sc
 	wheel_visible = true
-	gui.EnableScreenClicker( true )
+	gui.EnableScreenClicker(true)
 end
 
 --[[-------------------------------------------------------------------------
@@ -479,64 +411,48 @@ Close wheel menu. Will trigger callback.
 
 
 @return		[nil]			-					-
--------------------------------------------------------------------------]]--
+-------------------------------------------------------------------------]]
+--
 function CloseWheelMenu()
-	if !wheel_visible then return end
-
+	if not wheel_visible then return end
 	local x, y = input.GetCursorPos()
 	local w, h = ScrW(), ScrH()
 	local selected = 1
-
-	local dx, dy = x - w * 0.5,  -y + h * 0.5
+	local dx, dy = x - w * 0.5, -y + h * 0.5
 	local min_dist = w * 0.02
-
 	if dx * dx + dy * dy >= min_dist * min_dist then
-		local ca = math.deg( math.atan2( dx, dy ) )
-
-		if ca < 0 then
-			ca = 360 + ca
-		end
-
-		selected = math.floor( ca * #wheel_options / 360 ) + 1
+		local ca = math.deg(math.atan2(dx, dy))
+		if ca < 0 then ca = 360 + ca end
+		selected = math.floor(ca * #wheel_options / 360) + 1
 	end
 
-	if wheel_cb then
-		wheel_cb( wheel_options[selected].data )
-	end
-
+	if wheel_cb then wheel_cb(wheel_options[selected].data) end
 	wheel_visible = false
 	wheel_options = {}
-	gui.EnableScreenClicker( false )
+	gui.EnableScreenClicker(false)
 end
 
-hook.Add( "Think", "SLCWheelMenu", function()
-	if wheel_visible and isfunction( wheel_sc ) then
+hook.Add("Think", "SLCWheelMenu", function()
+	if wheel_visible and isfunction(wheel_sc) then
 		if wheel_sc() then
 			wheel_visible = false
 			wheel_options = {}
-			gui.EnableScreenClicker( false )
+			gui.EnableScreenClicker(false)
 		end
 	end
-end )
+end)
 
-hook.Add( "HUDPaint", "SLCWheelMenu", function()
-	if !wheel_visible then return end
-
+hook.Add("HUDPaint", "SLCWheelMenu", function()
+	if not wheel_visible then return end
 	local x, y = input.GetCursorPos()
 	local w, h = ScrW(), ScrH()
 	local selected = 1
-
-	local dx, dy = x - w * 0.5,  -y + h * 0.5
+	local dx, dy = x - w * 0.5, -y + h * 0.5
 	local min_dist = w * 0.02
-
 	if dx * dx + dy * dy >= min_dist * min_dist then
-		local ca = math.deg( math.atan2( dx, dy ) )
-
-		if ca < 0 then
-			ca = 360 + ca
-		end
-
-		selected = math.floor( ca * #wheel_options / 360 ) + 1
+		local ca = math.deg(math.atan2(dx, dy))
+		if ca < 0 then ca = 360 + ca end
+		selected = math.floor(ca * #wheel_options / 360) + 1
 	end
 
 	local seg = #wheel_options
@@ -545,66 +461,53 @@ hook.Add( "HUDPaint", "SLCWheelMenu", function()
 	local thickness = w * 0.055
 	local outer = inner + thickness
 	local cx, cy = w * 0.5, h * 0.5
-
 	for i = 1, seg do
 		local tab = wheel_options[i]
-
 		if i == selected then
-			surface.SetDrawColor( 100, 100, 100 )
+			surface.SetDrawColor(100, 100, 100)
 		elseif tab.disabled then
-			surface.SetDrawColor( 40, 40, 40 )
+			surface.SetDrawColor(40, 40, 40)
 		else
-			surface.SetDrawColor( 60, 60, 60 )
+			surface.SetDrawColor(60, 60, 60)
 		end
-		
+
 		draw.NoTexture()
-		surface.DrawRing( cx, cy, inner, thickness, ang, 40, 2, ang * ( i - 1 ) )
-
-		local la = math.rad( ang * ( i - 1 ) )
-		local dlx, dly = math.sin( la ), -math.cos( la )
-
-		surface.SetDrawColor( 200, 200, 200 )
-		surface.DrawLine( cx + dlx * inner, cy + dly * inner, cx + dlx * outer, cy + dly * outer )
-		
+		surface.DrawRing(cx, cy, inner, thickness, ang, 40, 2, ang * (i - 1))
+		local la = math.rad(ang * (i - 1))
+		local dlx, dly = math.sin(la), -math.cos(la)
+		surface.SetDrawColor(200, 200, 200)
+		surface.DrawLine(cx + dlx * inner, cy + dly * inner, cx + dlx * outer, cy + dly * outer)
 		if tab.mat then
-			surface.SetDrawColor( 255, 255, 255 )
-			surface.SetMaterial( GetMaterial( tab.mat, "smooth" ) )
-
+			surface.SetDrawColor(255, 255, 255)
+			surface.SetMaterial(GetMaterial(tab.mat, "smooth"))
 			local dist = inner + thickness * 0.5
-			local a = math.rad( ang * 0.5 + ang * ( i - 1 ) )
-			local drx, dry = math.sin( a ) * dist, -math.cos( a ) * dist
-
+			local a = math.rad(ang * 0.5 + ang * (i - 1))
+			local drx, dry = math.sin(a) * dist, -math.cos(a) * dist
 			local size = w * 0.035
-			surface.DrawTexturedRect( cx + drx - size * 0.5, cy + dry - size * 0.5, size, size )
+			surface.DrawTexturedRect(cx + drx - size * 0.5, cy + dry - size * 0.5, size, size)
 		end
 
-		if i != selected then continue end
-
+		if i ~= selected then continue end
 		local marg_w, marg_h = w * 0.01, h * 0.005
-		local tw, th = draw.TextSize( tab.name, "SCPHUDSmall" )
-
-		surface.SetDrawColor( 0, 0, 0, 150 )
-		surface.DrawRect( cx - tw * 0.5 - marg_w, h * 0.45 - th * 0.5 - marg_h, tw + marg_w * 2, th + marg_h * 2 )
-
+		local tw, th = draw.TextSize(tab.name, "SCPHUDSmall")
+		surface.SetDrawColor(0, 0, 0, 150)
+		surface.DrawRect(cx - tw * 0.5 - marg_w, h * 0.45 - th * 0.5 - marg_h, tw + marg_w * 2, th + marg_h * 2)
 		draw.Text{
 			text = tab.name,
-			pos = { cx, h * 0.45 },
-			color = Color( 255, 255, 255, 255 ),
+			pos = {cx, h * 0.45},
+			color = Color(255, 255, 255, 255),
 			font = "SCPHUDSmall",
 			xalign = TEXT_ALIGN_CENTER,
 			yalign = TEXT_ALIGN_CENTER,
 		}
 
-		if !tab.desc then continue end
-
+		if not tab.desc then continue end
 		local dsc_w, dsc_h = tab.desc:Size()
-
-		surface.SetDrawColor( 0, 0, 0, 150 )
-		surface.DrawRect( cx + outer + marg_w, h * 0.5 - dsc_h * 0.5 - marg_h, dsc_w + marg_w * 2, dsc_h + marg_h * 2 )
-
-		tab.desc:Draw( cx + outer + marg_w * 2, h * 0.5 - dsc_h * 0.5 )
+		surface.SetDrawColor(0, 0, 0, 150)
+		surface.DrawRect(cx + outer + marg_w, h * 0.5 - dsc_h * 0.5 - marg_h, dsc_w + marg_w * 2, dsc_h + marg_h * 2)
+		tab.desc:Draw(cx + outer + marg_w * 2, h * 0.5 - dsc_h * 0.5)
 	end
-end )
+end)
 
 --[[-------------------------------------------------------------------------
 ProgressBar
@@ -616,10 +519,8 @@ local PROGRESS_TEXT = ""
 local PROGRESS_ID = ""
 local PROGRESS_TICK_BASED = false
 local PROGRESS_TICK = false
-
-local COLOR_PROGRESS_BORDER = Color( 225, 225, 225, 255 )
-local COLOR_PROGRESS_FILL = Color( 75, 75, 90, 255 )
-
+local COLOR_PROGRESS_BORDER = Color(225, 225, 225, 255)
+local COLOR_PROGRESS_FILL = Color(75, 75, 90, 255)
 --[[-------------------------------------------------------------------------
 ProgressBar( enable, maxvalue, text, tick, id )
 
@@ -632,18 +533,17 @@ Enables or disables progress bar. Example of tick based bar can be found in Turr
 @param		[any]			id					Optional: If set, SetProgressBarValue and ProgressBarTick will only work if ID provided to them is the same as here
 
 @return		[nil]			-					-
--------------------------------------------------------------------------]]--
-function ProgressBar( enable, maxvalue, text, tick, id )
+-------------------------------------------------------------------------]]
+--
+function ProgressBar(enable, maxvalue, text, tick, id)
 	if enable then
-		if text and string.sub( text, 1, 5 ) == "lang:" then
+		if text and string.sub(text, 1, 5) == "lang:" then
 			local tab = LANG
-			
-			for k, v in ipairs( string.Explode( ".", string.sub( text, 6 ) ) ) do
+			for k, v in ipairs(string.Explode(".", string.sub(text, 6))) do
 				tab = tab[v]
-
-				if !tab then
+				if not tab then
 					break
-				elseif isstring( tab ) then
+				elseif isstring(tab) then
 					text = tab
 					break
 				end
@@ -651,11 +551,11 @@ function ProgressBar( enable, maxvalue, text, tick, id )
 		end
 
 		PROGRESS_ENABLED = true
-		PROGRESS_MAX_VALUE = tonumber( maxvalue ) or 100
+		PROGRESS_MAX_VALUE = tonumber(maxvalue) or 100
 		PROGRESS_VALUE = 0
 		PROGRESS_ID = id
 		PROGRESS_TEXT = text
-		PROGRESS_TICK_BASED = !!tick
+		PROGRESS_TICK_BASED = not not tick
 		PROGRESS_TICK = true
 	else
 		PROGRESS_ENABLED = false
@@ -677,11 +577,10 @@ Sets the current value of progress bar
 @param		[any]			id					Optional: If specified, this function will only work if bar has the same ID
 
 @return		[nil]			-					-
--------------------------------------------------------------------------]]--
-function SetProgressBarValue( value, id )
-	if !id or id == PROGRESS_ID then
-		PROGRESS_VALUE = tonumber( value ) or 0
-	end
+-------------------------------------------------------------------------]]
+--
+function SetProgressBarValue(value, id)
+	if not id or id == PROGRESS_ID then PROGRESS_VALUE = tonumber(value) or 0 end
 end
 
 --[[-------------------------------------------------------------------------
@@ -694,17 +593,15 @@ Sets progress bar color
 @param		[boolean]		blend				Optional: If set, fill alpha will be affected by progress bar status. IMPORTANT: fill must be color, not function
 
 @return		[nil]			-					-
--------------------------------------------------------------------------]]--
-function SetProgressBarColor( border, fill, blend )
-	if border then
-		COLOR_PROGRESS_BORDER = border
-	end
-
+-------------------------------------------------------------------------]]
+--
+function SetProgressBarColor(border, fill, blend)
+	if border then COLOR_PROGRESS_BORDER = border end
 	if fill then
-		if blend and type( fill ) != "function" then
-			COLOR_PROGRESS_FILL = function( f, i, seg )
+		if blend and type(fill) ~= "function" then
+			COLOR_PROGRESS_FILL = function(f, i, seg)
 				if i == seg then
-					return Color( fill.r, fill.g, fill.b, ( 1 - i + f / 0.05 ) * 255 )
+					return Color(fill.r, fill.g, fill.b, (1 - i + f / 0.05) * 255)
 				else
 					return fill
 				end
@@ -723,19 +620,16 @@ Keeps open tick based progress bar
 @param		[type]			id					Optional, If specified, this function will only work if bar has the same ID
 
 @return		[boolean]		-					Is progress bar enabled
--------------------------------------------------------------------------]]--
-function ProgressBarTick( id )
-	if PROGRESS_TICK_BASED and ( !id or id == PROGRESS_ID ) then
-		PROGRESS_TICK = true
-	end
-
+-------------------------------------------------------------------------]]
+--
+function ProgressBarTick(id)
+	if PROGRESS_TICK_BASED and (not id or id == PROGRESS_ID) then PROGRESS_TICK = true end
 	return PROGRESS_ENABLED
 end
 
 local tbpb_enable = false
 local tbpb_start = 0
 local tbpb_end = 0
-
 --[[-------------------------------------------------------------------------
 TimeBasedProgressBar( start_time, end_time, text )
 
@@ -746,24 +640,22 @@ Starts progress bar based on start and end time
 @param		[type]			text				Optional: Text displayed below bar
 
 @return		[nil]			-					-
--------------------------------------------------------------------------]]--
-function TimeBasedProgressBar( start_time, end_time, text )
-	ProgressBar( true, 1, text, false, "tbpb" )
-
+-------------------------------------------------------------------------]]
+--
+function TimeBasedProgressBar(start_time, end_time, text)
+	ProgressBar(true, 1, text, false, "tbpb")
 	tbpb_enable = true
 	tbpb_start = start_time
 	tbpb_end = end_time
 end
 
-hook.Add( "Tick", "SLCProgressBar", function()
+hook.Add("Tick", "SLCProgressBar", function()
 	if tbpb_enable then
 		local ct = CurTime()
-
-		SetProgressBarValue( ( ct - tbpb_start ) / ( tbpb_end - tbpb_start ), "tbpb" )
-
+		SetProgressBarValue((ct - tbpb_start) / (tbpb_end - tbpb_start), "tbpb")
 		if ct >= tbpb_end then
 			tbpb_enable = false
-			ProgressBar( false )
+			ProgressBar(false)
 		end
 	end
 
@@ -771,85 +663,105 @@ hook.Add( "Tick", "SLCProgressBar", function()
 		if PROGRESS_TICK then
 			PROGRESS_TICK = false
 		else
-			ProgressBar( false )
+			ProgressBar(false)
 		end
 	end
-end )
+end)
 
-hook.Add( "DrawOverlay", "SLCProgressBar", function()
+hook.Add("DrawOverlay", "SLCProgressBar", function()
 	if PROGRESS_ENABLED then
 		local w, h = ScrW(), ScrH()
-
-		local ratio = ( w * 0.075 ) / ( h * 0.24 )
-
+		local ratio = (w * 0.075) / (h * 0.24)
 		local bar_w = w * 0.27
 		local bar_h = h * 0.04
-
 		local bx_start = w * 0.5 - bar_w * 0.5
 		local by_start = h * 0.7
-
 		local bar_xoffset = ratio * bar_h
-
 		local b_in = {
-			{ x = bx_start, y = by_start },
-			{ x = bx_start + bar_w, y = by_start },
-			{ x = bx_start + bar_w + bar_xoffset, y = by_start + bar_h },
-			{ x = bx_start + bar_xoffset, y = by_start + bar_h },
+			{
+				x = bx_start,
+				y = by_start
+			},
+			{
+				x = bx_start + bar_w,
+				y = by_start
+			},
+			{
+				x = bx_start + bar_w + bar_xoffset,
+				y = by_start + bar_h
+			},
+			{
+				x = bx_start + bar_xoffset,
+				y = by_start + bar_h
+			},
 		}
 
 		local b_out = {
-			{ x = bx_start - 4, y = by_start - 2 },
-			{ x = bx_start + bar_w + 2, y = by_start - 2 },
-			{ x = bx_start + bar_w + bar_xoffset + 4, y = by_start + bar_h + 2 },
-			{ x = bx_start + bar_xoffset - 2, y = by_start + bar_h + 2 },
+			{
+				x = bx_start - 4,
+				y = by_start - 2
+			},
+			{
+				x = bx_start + bar_w + 2,
+				y = by_start - 2
+			},
+			{
+				x = bx_start + bar_w + bar_xoffset + 4,
+				y = by_start + bar_h + 2
+			},
+			{
+				x = bx_start + bar_xoffset - 2,
+				y = by_start + bar_h + 2
+			},
 		}
 
 		draw.NoTexture()
-		surface.SetDrawColor( COLOR_PROGRESS_BORDER )
-		surface.DrawDifference( b_in, b_out )
-
+		surface.SetDrawColor(COLOR_PROGRESS_BORDER)
+		surface.DrawDifference(b_in, b_out)
 		local dist = w * 0.004
-
 		local fill_h = bar_h - dist * 2
-		local fill_w = ( bar_w - dist ) / 20 - dist
-
+		local fill_w = (bar_w - dist) / 20 - dist
 		local fx_start = bx_start + dist * ratio + dist
 		local fy_start = by_start + dist
-
 		local fill_xoffset = ratio * fill_h
-
-		local isfunc = type( COLOR_PROGRESS_FILL ) == "function"
-		if !isfunc then
-			surface.SetDrawColor( COLOR_PROGRESS_FILL )
-		end
-
+		local isfunc = type(COLOR_PROGRESS_FILL) == "function"
+		if not isfunc then surface.SetDrawColor(COLOR_PROGRESS_FILL) end
 		local f = PROGRESS_VALUE / PROGRESS_MAX_VALUE
-		local seg = math.Clamp( math.ceil( f * 20 ), 0, 20 )
-
+		local seg = math.Clamp(math.ceil(f * 20), 0, 20)
 		if seg > 0 then
 			for i = 1, seg do
 				if isfunc then
-					local color = COLOR_PROGRESS_FILL( f, i, seg, PROGRESS_VALUE, PROGRESS_MAX_VALUE )
-					if color then
-						surface.SetDrawColor( color )
-					end
+					local color = COLOR_PROGRESS_FILL(f, i, seg, PROGRESS_VALUE, PROGRESS_MAX_VALUE)
+					if color then surface.SetDrawColor(color) end
 				end
 
 				surface.DrawPoly{
-					{ x = fx_start, y = fy_start },
-					{ x = fx_start + fill_w, y = fy_start },
-					{ x = fx_start + fill_w + fill_xoffset, y = fy_start + fill_h },
-					{ x = fx_start + fill_xoffset, y = fy_start + fill_h },
+					{
+						x = fx_start,
+						y = fy_start
+					},
+					{
+						x = fx_start + fill_w,
+						y = fy_start
+					},
+					{
+						x = fx_start + fill_w + fill_xoffset,
+						y = fy_start + fill_h
+					},
+					{
+						x = fx_start + fill_xoffset,
+						y = fy_start + fill_h
+					},
 				}
 
 				fx_start = fx_start + fill_w + dist
 			end
 		end
 
-		if PROGRESS_TEXT and PROGRESS_TEXT != "" then
+		if PROGRESS_TEXT and PROGRESS_TEXT ~= "" then
 			draw.Text{
 				text = PROGRESS_TEXT,
-				pos = { w * 0.5, by_start + bar_h + h * 0.01 },
+				pos = {w * 0.5, by_start + bar_h + h * 0.01},
 				font = "SCPHUDBig",
 				color = color_white,
 				xalign = TEXT_ALIGN_CENTER,
@@ -857,14 +769,12 @@ hook.Add( "DrawOverlay", "SLCProgressBar", function()
 			}
 		end
 	end
-end )
+end)
 
 --[[-------------------------------------------------------------------------
 Indicator
 ---------------------------------------------------------------------------]]
 INDICATOR_REGISTRY = INDICATOR_REGISTRY or {}
-
-
 --[[-------------------------------------------------------------------------
 CreateIndicator( model, nodraw, rendergroup, rendermode, shouldremove )
 
@@ -877,48 +787,40 @@ Indicator is a clinetside model used internally by Turret and SCP 023
 @param		[function]		shouldremove		Function called each frame - return true to remove indicator
 
 @return		[CSEnt]			-					Clientside model of indicator
--------------------------------------------------------------------------]]--
-function CreateIndicator( model, nodraw, rendergroup, rendermode, shouldremove )
-	local mdl = ClientsideModel( model, rendergroup )
-
-	if rendermode then
-		mdl:SetRenderMode( rendermode )
-	end
-	
-	mdl:SetNoDraw( nodraw )
-
+-------------------------------------------------------------------------]]
+--
+function CreateIndicator(model, nodraw, rendergroup, rendermode, shouldremove)
+	local mdl = ClientsideModel(model, rendergroup)
+	if rendermode then mdl:SetRenderMode(rendermode) end
+	mdl:SetNoDraw(nodraw)
 	for i = 1, #mdl:GetMaterials() do
-		mdl:SetSubMaterial( i - 1, "models/debug/debugwhite" )
+		mdl:SetSubMaterial(i - 1, "models/debug/debugwhite")
 	end
 
-	if isfunction( shouldremove ) then
-		INDICATOR_REGISTRY[mdl] = shouldremove
-	end
-
+	if isfunction(shouldremove) then INDICATOR_REGISTRY[mdl] = shouldremove end
 	return mdl
 end
 
 local ncheck = 0
-hook.Add( "Tick", "SLCIndicatorCheck", function()
+hook.Add("Tick", "SLCIndicatorCheck", function()
 	local rt = RealTime()
 	if ncheck > rt then return end
 	ncheck = rt + 1
-
-	for k, v in pairs( INDICATOR_REGISTRY ) do
-		if !IsValid( k ) then
+	for k, v in pairs(INDICATOR_REGISTRY) do
+		if not IsValid(k) then
 			INDICATOR_REGISTRY[k] = nil
 		elseif v() then
 			INDICATOR_REGISTRY[k] = nil
 			k:Remove()
 		end
 	end
-end )
+end)
+
 --[[-------------------------------------------------------------------------
 Sound functions
 ---------------------------------------------------------------------------]]
 local PrecachedSounds = {}
-
-/*---------------------------------------------------------------------------
+--[[---------------------------------------------------------------------------
 ClientsideSound( file, ent )
 
 Creates clientside sound handler attached to specified entity. Created sounds are precached.
@@ -928,50 +830,41 @@ This function is meant to be accesed by 'PlaySound' net message.
 @param 		[Entity] 		ent 		Parent entity. World Entity if nil
 
 @return 	[CSoundPatch] 	sound 		The sound object
----------------------------------------------------------------------------*/
-function ClientsideSound( file, ent )
-	if !IsValid( ent ) then
-		ent = game.GetWorld()
-	end
-
+---------------------------------------------------------------------------]]
+function ClientsideSound(file, ent)
+	if not IsValid(ent) then ent = game.GetWorld() end
 	if ent == NULL then return end
-
 	local sound
-	if !PrecachedSounds[file] then
-		sound = CreateSound( ent, file, nil )
+	if not PrecachedSounds[file] then
+		sound = CreateSound(ent, file, nil)
 		PrecachedSounds[file] = sound
-
 		return sound
 	else
 		sound = PrecachedSounds[file]
 		sound:Stop()
-
 		return sound
 	end
 end
 
-net.Receive( "PlaySound", function( len )
+net.Receive("PlaySound", function(len)
 	local com = net.ReadBool()
 	local vol = net.ReadFloat()
 	local f = net.ReadString()
-
 	if com then
-		local snd = ClientsideSound( f )
-		if !snd then return end
-
-		snd:SetSoundLevel( 0 )
+		local snd = ClientsideSound(f)
+		if not snd then return end
+		snd:SetSoundLevel(0)
 		snd:Play()
-		snd:ChangeVolume( vol )
+		snd:ChangeVolume(vol)
 	else
-		ClientsideSound( f )
+		ClientsideSound(f)
 	end
-end )
+end)
 
 --[[-------------------------------------------------------------------------
 SLC Popup
 ---------------------------------------------------------------------------]]
 SLC_POPUP_QUEUE = {}
-
 --[[---------------------------------------------------------------------------
 SLCPopup( name, text, keep, options, callback )
 
@@ -1000,31 +893,25 @@ Opens popup with given title, text and buttons
 												return true to prevent popup close
 
 @return		[nil]			-					-
----------------------------------------------------------------------------]]--
-function SLCPopup( name, text, keep, options, callback, font )
-	if font then
-		text = "<font="..font..">"..text.."</font>"
-	end
-
+---------------------------------------------------------------------------]]
+--
+function SLCPopup(name, text, keep, options, callback, font)
+	if font then text = "<font=" .. font .. ">" .. text .. "</font>" end
 	local data = {
 		name = name,
 		text = text,
 		keep = keep,
-		options = options or { "OK" },
+		options = options or {"OK"},
 		callback = callback,
 	}
 
-	if IsValid( SLC_POPUP ) then
-		return table.insert( SLC_POPUP_QUEUE, data )
-	end
-
-	SLC_POPUP = vgui.Create( "SLCPopup" )
-	SLC_POPUP:SetData( data )
-
+	if IsValid(SLC_POPUP) then return table.insert(SLC_POPUP_QUEUE, data) end
+	SLC_POPUP = vgui.Create("SLCPopup")
+	SLC_POPUP:SetData(data)
 	return 0
 end
 
-/*---------------------------------------------------------------------------
+--[[---------------------------------------------------------------------------
 SLCLegacyPopup( name, text, keep, callback, ... )
 
 Legacy function. Internally calls new one
@@ -1037,63 +924,43 @@ Legacy function. Internally calls new one
 @param 		[vararg] 		- 			Names of buttons
 
 @return 	[nil] 			- 			-
----------------------------------------------------------------------------*/
-function SLCLegacyPopupIfEmpty( ... )
-	if !IsValid( SLC_POPUP ) then
-		SLCLegacyPopup( ... )
-	end
+---------------------------------------------------------------------------]]
+function SLCLegacyPopupIfEmpty(...)
+	if not IsValid(SLC_POPUP) then SLCLegacyPopup(...) end
 end
 
-function SLCLegacyPopup( name, text, keep, callback, ... )
-	SLCPopup( name, text, keep, { ... }, callback, "SCPHUDVSmall" )
+function SLCLegacyPopup(name, text, keep, callback, ...)
+	SLCPopup(name, text, keep, {...}, callback, "SCPHUDVSmall")
 end
 
 --[[-------------------------------------------------------------------------
 Tooltip
 ---------------------------------------------------------------------------]]
 local tooltip
-
-hook.Add( "DrawOverlay", "SLCToolTip", function()
-	if !tooltip then
+hook.Add("DrawOverlay", "SLCToolTip", function()
+	if not tooltip then
 		local hovered = vgui.GetHoveredPanel()
-		if IsValid( hovered ) and hovered.SLCToolTip then
-			tooltip = hovered.SLCToolTip
-		end
+		if IsValid(hovered) and hovered.SLCToolTip then tooltip = hovered.SLCToolTip end
 	end
 
 	if tooltip then
 		local tmp = tooltip
 		tooltip = nil
-
 		local sw, sh = ScrW(), ScrH()
-
-		if GetSettingsValue( "hud_windowed_mode" ) then
-			sh = sh * 0.97
-		end
-
+		if GetSettingsValue("hud_windowed_mode") then sh = sh * 0.97 end
 		local w, h = tmp:GetWidth() + 16, tmp:GetHeight() + 16
 		local x, y = input.GetCursorPos()
-
 		x = x + 16
-
-		if x + w > sw then
-			x = sw - w
-		end
-
-		if y + h > sh then
-			y = sh - h
-		end
-
-		surface.SetDrawColor( 16, 16, 16, 235 )
-		surface.DrawRect( x, y, w, h )
-
-		surface.SetDrawColor( 128, 128, 128 )
-		surface.DrawOutlinedRect( x, y, w, h )
-
-		tmp:Draw( x + 8, y + 8, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 255, TEXT_ALIGN_LEFT )
+		if x + w > sw then x = sw - w end
+		if y + h > sh then y = sh - h end
+		surface.SetDrawColor(16, 16, 16, 235)
+		surface.DrawRect(x, y, w, h)
+		surface.SetDrawColor(128, 128, 128)
+		surface.DrawOutlinedRect(x, y, w, h)
+		tmp:Draw(x + 8, y + 8, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 255, TEXT_ALIGN_LEFT)
 	end
-end )
+end)
 
-function SLCToolTip( obj )
+function SLCToolTip(obj)
 	tooltip = obj
 end

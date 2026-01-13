@@ -1,11 +1,11 @@
 CLASSD_MODELS = {"models/player/kerry/class_d_1.mdl", "models/player/kerry/class_d_2.mdl", "models/player/kerry/class_d_3.mdl", "models/player/kerry/class_d_4.mdl", "models/player/kerry/class_d_5.mdl", "models/player/kerry/class_d_6.mdl", "models/player/kerry/class_d_7.mdl",}
 VETERAND_MODELS = {"models/player/kerry/class_jan_2.mdl", "models/player/kerry/class_jan_3.mdl", "models/player/kerry/class_jan_4.mdl", "models/player/kerry/class_jan_5.mdl", "models/player/kerry/class_jan_6.mdl", "models/player/kerry/class_jan_7.mdl",}
 SCI_MODELS = {"models/scp/apsci_cohrt.mdl", "models/scp/apsci_male_02.mdl", "models/scp/apsci_male_03.mdl", "models/scp/apsci_male_05.mdl", "models/scp/apsci_male_07.mdl", "models/scp/apsci_male_08.mdl", "models/scp/apsci_male_09.mdl", "models/player/kerry/Class_scientist_1.mdl", "models/player/kerry/Class_scientist_2.mdl", "models/player/kerry/Class_scientist_3.mdl", "models/player/kerry/Class_scientist_4.mdl", "models/player/kerry/Class_scientist_5.mdl", "models/player/kerry/Class_scientist_6.mdl", "models/player/kerry/Class_scientist_7.mdl",}
-SCI_MODELS_2 = {"models/1000shells/sci/scientists_1.mdl", "models/1000shells/sci/scientists_2.mdl", "models/1000shells/sci/scientists_3.mdl", "models/1000shells/sci/scientists_4.mdl", "models/1000shells/sci/scientists_5.mdl", "models/1000shells/sci/scientists_6.mdl", "models/1000shells/sci/scientists_7.mdl", "models/1000shells/sci/scientists_8.mdl", "models/1000shells/sci/scientists_9.mdl",}
+SCI_MODELS_2 = {"models/1000shells/sci/scientists_1.mdl", "models/1000shells/sci/scientists_2.mdl", "models/1000shells/sci/scientists_3.mdl", "models/1000shells/sci/scientists_4.mdl", "models/1000shells/sci/scientists_5.mdl", "models/1000shells/sci/scientists_6.mdl", "models/1000shells/sci/scientists_7.mdl", "models/1000shells/sci/scientists_8.mdl", "models/1000shells/sci/scientists_9.mdl", "models/interni/lobanov.mdl", "models/interni/romanenko.mdl"}
+SCI_MODELS_SENIOR = {"models/interni/bikov.mdl", "models/interni/goidaman.mdl", "models/interni/Kupitman.mdl"}
 GUARD_MODELS = {"models/player/alski/security.mdl", "models/player/alski/security2.mdl", "models/player/alski/security3.mdl", "models/player/alski/security4.mdl", "models/player/alski/security5.mdl", "models/player/alski/security6.mdl", "models/player/alski/security7.mdl", "models/player/alski/security8.mdl", "models/player/alski/security9.mdl",}
 MTF_MODELS = {"models/npc/portal/male_02_garde.mdl", "models/npc/portal/male_04_garde.mdl", "models/npc/portal/male_05_garde.mdl", "models/npc/portal/male_06_garde.mdl", "models/npc/portal/male_07_garde.mdl", "models/npc/portal/male_08_garde.mdl", "models/npc/portal/male_09_garde.mdl",}
 CI_MODELS = {"models/player/1000shells/unit_1_ci.mdl", "models/player/1000shells/unit_2_ci.mdl", "models/player/1000shells/unit_3_ci.mdl", "models/player/1000shells/unit_4_ci.mdl", "models/player/1000shells/unit_5_ci.mdl", "models/player/1000shells/unit_6_ci.mdl", "models/player/1000shells/unit_7_ci.mdl", "models/player/1000shells/unit_8_ci.mdl",}
-
 hook.Add("SLCRegisterClassGroups", "BaseGroups", function()
 	AddClassGroup("classd", 49, SPAWN_CLASSD)
 	AddClassGroup("sci", 21, SPAWN_SCIENT)
@@ -240,9 +240,9 @@ hook.Add("SLCRegisterPlayerClasses", "BaseClasses", function()
 		tier = 1,
 	})
 
-	RegisterClass("seniorsci", "sci", SCI_MODELS_2, {
+	RegisterClass("seniorsci", "sci", SCI_MODELS_SENIOR, {
 		team = TEAM_SCI,
-		weapons = {{"weapon_slc_glass_knife", "weapon_slc_pipe"}},
+		weapons = {{"weapon_slc_glass_knife", "weapon_slc_pipe", "item_scp500"}},
 		ammo = {},
 		chip = "sci3",
 		omnitool = true,

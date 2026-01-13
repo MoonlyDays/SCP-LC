@@ -1559,3 +1559,56 @@ if CLIENT then
 		end
 	end)
 end
+
+--[[-------------------------------------------------------------------------
+Deafened (SCP-808-J Evil Kanye)
+---------------------------------------------------------------------------]]
+EFFECTS.RegisterEffect("scp808j_deafened", {
+	duration = 30,
+	stacks = 0,
+	tiers = {
+		{
+			icon = Material("slc/hud/effects/deafened.png")
+		},
+	},
+	cantarget = scp_spec_filter,
+	begin = function(self, ply, tier, args, refresh)
+		if CLIENT then
+			ply:SetDSP(31) -- Heavy muffled/underwater sound
+		end
+	end,
+	finish = function(self, ply, tier, args, interrupt)
+		if CLIENT then
+			ply:SetDSP(0)
+		end
+	end,
+})
+
+--[[-------------------------------------------------------------------------
+Canceled (SCP-808-J Evil Kanye - Cancel Culture)
+---------------------------------------------------------------------------]]
+EFFECTS.RegisterEffect("scp808j_canceled", {
+	duration = 15,
+	stacks = 0,
+	tiers = {
+		{
+			icon = Material("slc/hud/effects/canceled.png")
+		},
+	},
+	cantarget = scp_spec_filter,
+})
+
+if CLIENT then
+	local canceled_intensity = 0
+	hook.Add("SLCScreenMod", "SCP808JCanceled", function(data)
+		local ply = LocalPlayer()
+		local has_effect = ply.HasEffect and ply:HasEffect("scp808j_canceled")
+		local target = has_effect and 1 or 0
+		canceled_intensity = Lerp(FrameTime() * 4, canceled_intensity, target)
+		if canceled_intensity > 0.01 then
+			-- Red tint to indicate danger/marked state
+			data.colour = data.colour * (1 - 0.3 * canceled_intensity)
+			data.add_r = (data.add_r or 0) + 0.1 * canceled_intensity
+		end
+	end)
+end

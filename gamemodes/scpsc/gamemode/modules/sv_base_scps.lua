@@ -279,6 +279,29 @@ hook.Add( "RegisterSCP", "RegisterBaseSCPs", function()
 		buff_scale = 0.95,
 	} )
 
+	RegisterSCP( "SCP808J", "models/player/kanye/kanye.mdl", "weapon_scp_808j", {
+		jump_power = 200,
+		prep_freeze = true,
+		allow_chat = true,
+	}, {
+		base_health = {
+			var = 2000,
+			min = 1500,
+			max = 2500
+		},
+		max_health = {
+			var = 2000,
+			min = 1500,
+			max = 2500
+		},
+		base_speed = {
+			var = 175,
+			min = 150,
+			max = 200
+		},
+		buff_scale = 0.85,
+	} )
+
 	RegisterSCP( "SCP1987J", "models/cktheamazingfrog/player/freddyar/freddyar.mdl", "weapon_scp_1987j", {
 		jump_power = 150,
 		prep_freeze = true,
@@ -304,5 +327,29 @@ hook.Add( "RegisterSCP", "RegisterBaseSCPs", function()
 		prot_scale = 0.9,
 	}, nil, function( ply )
 		ply:SetBodygroup( 0, 0 )
+		ply:SetProperty( "escape_override", false )
 	end )
+
+	-- William Afton / Springtrap
+	RegisterSCP( "SCP1983J", "models/player/purpleguy.mdl", "weapon_scp_1983j", {
+		jump_power = 200,
+		prep_freeze = true,
+	}, {
+		base_health = {
+			var = 2200,
+			min = 1800,
+			max = 2800
+		},
+		max_health = {
+			var = 2200,
+			min = 1800,
+			max = 2800
+		},
+		base_speed = {
+			var = 170,
+			min = 150,
+			max = 200
+		},
+		buff_scale = 0.85,
+	} )
 end )

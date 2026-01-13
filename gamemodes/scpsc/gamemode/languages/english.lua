@@ -309,6 +309,8 @@ effects.antidote = "Antidote"
 effects.poison_syringe = "Poison"
 effects.frightened = "Frightened"
 effects.scp1987j_blackout = "Blackout"
+effects.scp808j_deafened = "Deafened"
+effects.scp808j_canceled = "Canceled"
 
 --[[-------------------------------------------------------------------------
 Class viewer
@@ -804,7 +806,9 @@ classes.SCP939 = "SCP-939"
 classes.SCP966 = "SCP-966"
 classes.SCP3199 = "SCP-3199"
 classes.SCP24273 = "SCP-2427-3"
+classes.SCP808J = "SCP-808-J"
 classes.SCP1987J = "SCP-1987-J"
+classes.SCP1983J = "SCP-1983-J"
 classes.scp_1987j_freddy = "SCP-1987-J"
 
 classes.classd = "Class D"
@@ -818,6 +822,7 @@ classes.classd_prestige = "Class D Tailor"
 classes.sciassistant = "Scientist Assistant"
 classes.sci = "Scientist"
 classes.seniorsci = "Senior Scientist"
+classes.bikovsci = "Andrey Evgenievich"
 classes.headsci = "Head Scientist"
 classes.contspec = "Containment Specialist"
 classes.sci_prestige = "Class D Escapee"
@@ -1061,12 +1066,19 @@ lang.CLASS_OBJECTIVES = {
 
 	SCP3199 = generic_scp,
 
-	SCP1987J = [[- Escape from the facility
-- Cooperate with other SCPs
-- Hunt down personnel with jumpscare attacks]],
+	SCP808J = [[- Cooperate with other SCPs
+- Switch between Good and Evil modes
+- Hunt down personnel]],
 
-	scp_1987j_freddy = [[- Escape from the facility
-- Cooperate with other SCPs
+	SCP1987J = [[- Cooperate with other SCPs
+- Hunt down personnel]],
+
+	SCP1983J = [[- Cooperate with other SCPs
+- Hunt your assigned target for instant kills
+- Killing targets increases your damage permanently
+- Use audio attack to disorient enemies]],
+
+	scp_1987j_freddy = [[- Cooperate with other SCPs
 - Hunt down personnel with jumpscare attacks]],
 }
 
@@ -2915,17 +2927,166 @@ wep.SCP3199 = {
 wep.SCP1987J = {
 	name = "SCP-1987-J",
 	desc = "Freddy Fazbear - An anomalous animatronic entity",
-	jumpscare = {
-		name = "Jumpscare",
-		desc = "Close-range attack that deals damage and applies the Frightened effect, slowing and disorienting the target.",
+
+	skills = {
+		jumpscare = {
+			name = "Jumpscare",
+			info = "Close-range attack that deals damage and applies the Frightened effect, slowing and disorienting the target.",
+		},
+		power_outage = {
+			name = "Power Outage",
+			info = "Create a localized blackout affecting nearby players. Forces doors to close and discharges battery-powered equipment.",
+		},
+		night_bonus = {
+			name = "Night Performer",
+			info = "Passive ability that grants increased movement speed while in dark areas.",
+		},
 	},
-	power_outage = {
-		name = "Power Outage",
-		desc = "Disable lights in the area, reducing visibility for nearby humans.",
+	upgrades = {
+		parse_description = true,
+
+		jumpscare1 = {
+			name = "Five Nights I",
+			info = "Upgrades your jumpscare ability\n\t• Cooldown reduced by [-jumpscare_cd]",
+		},
+		jumpscare2 = {
+			name = "Five Nights II",
+			info = "Upgrades your jumpscare ability\n\t• Damage increased by [+jumpscare_dmg]",
+		},
+		power1 = {
+			name = "It's Me I",
+			info = "Upgrades your power outage ability\n\t• Cooldown reduced by [-power_cd]",
+		},
+		power2 = {
+			name = "It's Me II",
+			info = "Upgrades your power outage ability\n\t• Blackout radius increased by [+power_radius]\n\t• Door closure radius increased by [+power_door_radius]",
+		},
+		power3 = {
+			name = "It's Me III",
+			info = "Upgrades your power outage ability\n\t• Battery discharge amount increased by [+power_discharge]",
+		},
+		outside_buff = {
+			name = "Afterhours",
+			info = "Reduces damage penalty when outside the facility",
+		},
 	},
-	showtime = {
-		name = "Showtime!",
-		desc = "Become invulnerable and immobile for 3 seconds, then release a devastating burst attack that damages and frightens all nearby enemies.",
+}
+
+wep.SCP808J = {
+	name = "SCP-808-J",
+	desc = "Kanye West - A reality-bending celebrity entity with dual personalities",
+	skills = {
+		attack = {
+			name = "Melee Attack",
+			info = "Close-range attack that deals 30 damage to enemies. 3 second cooldown.",
+		},
+		item_spawn = {
+			name = "Blessing",
+			info = "Good Kanye: Spawn a random useful item in front of you. Items include medkits, batteries, flashlights, radios, gas masks, NVGs, and medical supplies. 1 minute cooldown.",
+		},
+		deafen = {
+			name = "Deafen",
+			info = "Evil Kanye: Blast nearby players with overwhelming sound, deafening them for 30 seconds. Affected players cannot hear any other sounds. 3 minute cooldown, 600 unit radius.",
+		},
+		stamina_drain = {
+			name = "Exhaustion",
+			info = "Good Kanye: Drain all stamina from players within 5 meters, leaving them unable to sprint. 3 minute cooldown.",
+		},
+		cancel_culture = {
+			name = "Cancel Culture",
+			info = "Evil Kanye: Mark the targeted player as 'Canceled'. They take 25% increased damage from all sources for 15 seconds and are highlighted through walls. 45 second cooldown.",
+		},
+		sunday_service = {
+			name = "Sunday Service",
+			info = "Good Kanye Passive: Regenerate 5 HP every 3 seconds while standing still. Requires 1 second of standing still before regeneration begins.",
+		},
+		paparazzi = {
+			name = "Paparazzi",
+			info = "Evil Kanye Passive: The closest enemy is always highlighted through walls with a red outline, allowing you to track their position.",
+		},
+		mode = {
+			name = "Personality Mode",
+			info = "Automatically switches between Good and Evil Kanye every 1-5 minutes. Good Kanye is supportive with healing and item spawning. Evil Kanye is aggressive with debuffs and target marking.",
+		},
+	},
+	upgrades = {
+		parse_description = true,
+
+		primary1 = {
+			name = "Gold Digger I",
+			info = "Upgrades your melee attack\n\t• Cooldown reduced by [-primary_cd]",
+		},
+		primary2 = {
+			name = "Gold Digger II",
+			info = "Upgrades your melee attack\n\t• Damage increased by [+primary_dmg]",
+		},
+		good1 = {
+			name = "Sunday Service",
+			info = "Upgrades Good Kanye abilities\n\t• Item spawn cooldown reduced by [-item_cd]\n\t• Stamina drain radius increased by [+stamina_radius]",
+		},
+		evil1 = {
+			name = "Yeezus I",
+			info = "Upgrades Evil Kanye abilities\n\t• Deafen cooldown reduced by [-deafen_cd]\n\t• Cancel Culture cooldown reduced by [-cancel_cd]",
+		},
+		evil2 = {
+			name = "Yeezus II",
+			info = "Upgrades Evil Kanye abilities\n\t• Cancel Culture duration increased by [+cancel_duration]\n\t• Deafen radius increased by [+deafen_radius]",
+		},
+		outside_buff = {
+			name = "Famous",
+			info = "Reduces damage penalty when outside the facility",
+		},
+	},
+}
+
+wep.SCP1983J = {
+	name = "SCP-1983-J",
+	desc = "William Afton / Springtrap - A serial killer trapped inside an animatronic suit",
+	skills = {
+		attack = {
+			name = "Slaughter",
+			info = "Close-range attack. Deals 20 base damage (+5 for each target killed). Instantly kills your assigned target.",
+		},
+		highlight = {
+			name = "Follow Me",
+			info = "Highlights your current target through walls for 2 seconds. 60 second cooldown.",
+		},
+		insanity = {
+			name = "It's Me",
+			info = "Plays audio that causes insanity effect to nearby enemies, blurring their vision for 10 seconds. 2 minute cooldown.",
+		},
+		damage = {
+			name = "Damage Bonus",
+			info = "Shows your current damage and target kill count.",
+		},
+	},
+	upgrades = {
+		parse_description = true,
+
+		primary1 = {
+			name = "I Always Come Back I",
+			info = "Upgrades your attack\n\t• Cooldown reduced by [-primary_cd]",
+		},
+		primary2 = {
+			name = "I Always Come Back II",
+			info = "Upgrades your attack\n\t• Damage increased by [+primary_dmg]",
+		},
+		highlight1 = {
+			name = "Follow Me",
+			info = "Upgrades target tracking\n\t• Highlight cooldown reduced by [-highlight_cd]\n\t• Highlight duration increased by [+highlight_duration]",
+		},
+		insanity1 = {
+			name = "It's Me I",
+			info = "Upgrades insanity ability\n\t• Cooldown reduced by [-insanity_cd]",
+		},
+		insanity2 = {
+			name = "It's Me II",
+			info = "Upgrades insanity ability\n\t• Radius increased by [+insanity_radius]\n\t• Duration increased by [+insanity_duration]",
+		},
+		outside_buff = {
+			name = "The Man Behind the Slaughter",
+			info = "Reduces damage penalty when outside the facility",
+		},
 	},
 }
 
