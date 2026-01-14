@@ -1,74 +1,56 @@
-AddCSLuaFile()
-
+﻿AddCSLuaFile()
 ENT.Type = "anim"
-
 ENT.Model = ""
-
-/*function ENT:SetupDataTables()
-end*/
-
+--[[function ENT:SetupDataTables()
+end]]
 function ENT:Initialize()
-	self:DrawShadow( false )
-	self:SetModel( self.Model )
-
-	if SERVER then
-		self:PhysicsInit( SOLID_VPHYSICS )
-		self:SetMoveType( MOVETYPE_NONE )
-		self:SetUseType( SIMPLE_USE )
-
-		local phys = self:GetPhysicsObject()
-		if IsValid( phys ) then
-			phys:EnableMotion( false )
-		end
-	end
+    self:DrawShadow(false)
+    self:SetModel(self.Model)
+    if SERVER then
+        self:PhysicsInit(SOLID_VPHYSICS)
+        self:SetMoveType(MOVETYPE_NONE)
+        self:SetUseType(SIMPLE_USE)
+        local phys = self:GetPhysicsObject()
+        if IsValid(phys) then phys:EnableMotion(false) end
+    end
 end
 
 function ENT:Think()
-
 end
 
 ENT.NUse = 0
-function ENT:Use( activator, caller, type, value )
-	if self.Usable then
-		local ct = CurTime()
-
-		if self.NUse <= ct then
-			self.NUse = ct + self.Delay
-
-			self:OnUse( activator )
-		end
-	end
+function ENT:Use(activator, caller, type, value)
+    if self.Usable then
+        local ct = CurTime()
+        if self.NUse <= ct then
+            self.NUse = ct + self.Delay
+            self:OnUse(activator)
+        end
+    end
 end
 
-function ENT:OnUse( ply )
-
+function ENT:OnUse(ply)
 end
 
-function ENT:SetUsable( usable, delay )
-	self.Usable = usable
-	self.Delay = delay or 0
+function ENT:SetUsable(usable, delay)
+    self.Usable = usable
+    self.Delay = delay or 0
 end
 
 if CLIENT then
-	local TEX_WIDTH, TEX_HEIGHT = 512, 405
+    local TEX_WIDTH, TEX_HEIGHT = 512, 405
+    function ENT:Draw()
+        self:DrawModel()
+        local ang = self:GetAngles()
+        local pos = self:GetPos()
+        pos = pos + ang:Forward() * -0.3 + ang:Right() * 35.8 + ang:Up() * 23
+        ang:RotateAroundAxis(ang:Forward(), 90)
+        ang:RotateAroundAxis(Vector(0, 0, 1), 90)
+        cam.Start3D2D(pos, ang, 0.06797)
+        self:RenderScreen(TEX_WIDTH, TEX_HEIGHT)
+        cam.End3D2D()
+    end
 
-	function ENT:Draw()
-		self:DrawModel()
-
-		local ang = self:GetAngles()
-		local pos = self:GetPos()
-
-		pos = pos + ang:Forward() * -0.3 + ang:Right() * 35.8 + ang:Up() * 23
-
-		ang:RotateAroundAxis( ang:Forward(), 90 )
-		ang:RotateAroundAxis( Vector( 0, 0, 1 ), 90 )
-
-		cam.Start3D2D( pos, ang, 0.06797 )
-			self:RenderScreen( TEX_WIDTH, TEX_HEIGHT )
-		cam.End3D2D()
-	end
-
-	function ENT:RenderScreen( width, height )
-		
-	end
+    function ENT:RenderScreen(width, height)
+    end
 end

@@ -1,4 +1,4 @@
-function EFFECT:Init(data)
+﻿function EFFECT:Init(data)
     self.Origin = data:GetOrigin()
     self.Arcs = math.Round(data:GetMagnitude())
     self.Radius = data:GetRadius()

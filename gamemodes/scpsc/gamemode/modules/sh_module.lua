@@ -1,4 +1,4 @@
--- Shared file
+﻿-- Shared file
 GM.Name = "SCP: Lost Control"
 GM.Author = "danx91 [ZGFueDkx]"
 GM.Email = ""
@@ -21,22 +21,22 @@ PrecacheParticleSystem("SLC_SCP009_Smoke")
 Convars
 ---------------------------------------------------------------------------]]
 local function cvar_checker(...)
-	local tab = {...}
-	local patterns = {}
-	for n = 1, #tab do
-		local pattern = "^%d+"
-		for i = 2, tab[n] do
-			pattern = pattern .. ",%d+"
-		end
+    local tab = {...}
+    local patterns = {}
+    for n = 1, #tab do
+        local pattern = "^%d+"
+        for i = 2, tab[n] do
+            pattern = pattern .. ",%d+"
+        end
 
-		patterns[n] = pattern .. "$"
-	end
-	return function(data)
-		for i, v in ipairs(patterns) do
-			if string.match(data, v) then return true end
-		end
-		return false
-	end
+        patterns[n] = pattern .. "$"
+    end
+    return function(data)
+        for i, v in ipairs(patterns) do
+            if string.match(data, v) then return true end
+        end
+        return false
+    end
 end
 
 --ROUND
@@ -134,27 +134,27 @@ Global functions
 Update Handler
 ---------------------------------------------------------------------------]]
 timer.Simple(0, function()
-	if not file.Exists("slc", "DATA") then file.CreateDir("slc") end
-	local saved = file.Read("slc/version.dat") or "x"
-	if saved ~= SIGNATURE then
-		hook.Run("SLCVersionChanged", SLCVersion(saved), SLCVersion(SIGNATURE))
-		file.Write("slc/version.dat", SIGNATURE)
-	end
+    if not file.Exists("slc", "DATA") then file.CreateDir("slc") end
+    local saved = file.Read("slc/version.dat") or "x"
+    if saved ~= SIGNATURE then
+        hook.Run("SLCVersionChanged", SLCVersion(saved), SLCVersion(SIGNATURE))
+        file.Write("slc/version.dat", SIGNATURE)
+    end
 
-	hook.Run("SLCGamemodeLoaded")
+    hook.Run("SLCGamemodeLoaded")
 end)
 
 --[[-------------------------------------------------------------------------
 Shared GM functions
 ---------------------------------------------------------------------------]]
 function GM:Initialize()
-	self.BaseClass.Initialize(self)
+    self.BaseClass.Initialize(self)
 end
 
 function GM:PreGamemodeLoaded() --Remove unused expensive hooks
-	hook.Remove("PostDrawEffects", "RenderWidgets")
-	hook.Remove("PlayerTick", "TickWidgets")
-	-- hook.Remove( "RenderScene", "RenderStereoscopy" )
+    hook.Remove("PostDrawEffects", "RenderWidgets")
+    hook.Remove("PlayerTick", "TickWidgets")
+    -- hook.Remove( "RenderScene", "RenderStereoscopy" )
 end
 
 --[[function GM:GetGameDescription()
@@ -169,28 +169,28 @@ EntityEmitSound
 local cheats = GetConVar("sv_cheats")
 local timeScale = GetConVar("host_timescale")
 function GM:EntityEmitSound(t)
-	local p = t.Pitch
-	if game.GetTimeScale() ~= 1 then p = p * game.GetTimeScale() end
-	if timeScale:GetFloat() ~= 1 and cheats:GetBool() then p = p * timeScale:GetFloat() end
-	if p ~= t.Pitch then
-		t.Pitch = math.Clamp(p, 0, 255)
-		return true
-	end
+    local p = t.Pitch
+    if game.GetTimeScale() ~= 1 then p = p * game.GetTimeScale() end
+    if timeScale:GetFloat() ~= 1 and cheats:GetBool() then p = p * timeScale:GetFloat() end
+    if p ~= t.Pitch then
+        t.Pitch = math.Clamp(p, 0, 255)
+        return true
+    end
 end
 
 function GM:ShouldCollide(ent1, ent2)
-	return true
+    return true
 end
 
 --[[-------------------------------------------------------------------------
 Commands
 ---------------------------------------------------------------------------]]
 slc_cmd.AddCommand("slc_destroy_gatea", function(ply)
-	if not SERVER or not IsValid(ply) or not ply.ClassData or not ply.ClassData.support or ply:GetPos():DistToSqr(POS_EXPLODE_A) > 62500 then return end
-	ExplodeGateA(ply)
+    if not SERVER or not IsValid(ply) or not ply.ClassData or not ply.ClassData.support or ply:GetPos():DistToSqr(POS_EXPLODE_A) > 62500 then return end
+    ExplodeGateA(ply)
 end, 30)
 
 slc_cmd.AddCommand("slc_escort", function(ply)
-	if not SERVER or not IsValid(ply) then return end
-	PlayerEscort(ply)
+    if not SERVER or not IsValid(ply) then return end
+    PlayerEscort(ply)
 end, 10)

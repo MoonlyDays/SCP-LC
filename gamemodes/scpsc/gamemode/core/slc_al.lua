@@ -1,96 +1,79 @@
---[[-------------------------------------------------------------------------
+﻿--[[-------------------------------------------------------------------------
 SLC Auth Library
 ---------------------------------------------------------------------------]]
 SLCAuth = {
-	_LIBRARIES = {},
-	//_PRIMARY_LIB = nil
-	_NAMES = {}
+    _LIBRARIES = {},
+    --_PRIMARY_LIB = nil
+    _NAMES = {}
 }
 
-function SLCAuth.RunHook( name, ignore, ... )
-	if SLCAuth._PRIMARY_LIB then
-		local lib = SLCAuth._LIBRARIES[SLCAuth._PRIMARY_LIB]
-		if lib and lib[name] then
-			local result = { lib[name]( ... ) }
+function SLCAuth.RunHook(name, ignore, ...)
+    if SLCAuth._PRIMARY_LIB then
+        local lib = SLCAuth._LIBRARIES[SLCAuth._PRIMARY_LIB]
+        if lib and lib[name] then
+            local result = {lib[name](...)}
+            if result[1] ~= nil and result[1] ~= ignore then return unpack(result) end
+        end
+    end
 
-			if result[1] != nil and result[1] != ignore then
-				return unpack( result )
-			end
-		end
-	end
-
-	for k, v in pairs( SLCAuth._LIBRARIES ) do
-		if v[name] then
-			local result = { v[name]( ... ) }
-
-			if result[1] != nil and result[1] != ignore then
-				return unpack( result )
-			end
-		end
-	end
+    for k, v in pairs(SLCAuth._LIBRARIES) do
+        if v[name] then
+            local result = {v[name](...)}
+            if result[1] ~= nil and result[1] ~= ignore then return unpack(result) end
+        end
+    end
 end
 
-function SLCAuth.AddLibrary( name, display, data )
-	if name and display and data then
-		SLCAuth._LIBRARIES[name] = data
-		SLCAuth._NAMES[name] = display
-	end
+function SLCAuth.AddLibrary(name, display, data)
+    if name and display and data then
+        SLCAuth._LIBRARIES[name] = data
+        SLCAuth._NAMES[name] = display
+    end
 end
 
-function SLCAuth.SetPrimaryLibrary( name )
-	if name then
-		SLCAuth._PRIMARY_LIB = name
-	end
+function SLCAuth.SetPrimaryLibrary(name)
+    if name then SLCAuth._PRIMARY_LIB = name end
 end
 
-function SLCAuth.HasAccess( ply, access )
-	if SERVER and ply:IsListenServerHost() then
-		return true
-	end
-
-	local result = SLCAuth.RunHook( "CheckAccess", false, ply, access )
-	if result != nil then
-		return result
-	end
-
-	return false
+function SLCAuth.HasAccess(ply, access)
+    if SERVER and ply:IsListenServerHost() then return true end
+    local result = SLCAuth.RunHook("CheckAccess", false, ply, access)
+    if result ~= nil then return result end
+    return false
 end
 
-function SLCAuth.RegisterAccess( access, help )
-	SLCAuth.RunHook( "RegisterAccess", nil, access, help )
+function SLCAuth.RegisterAccess(access, help)
+    SLCAuth.RunHook("RegisterAccess", nil, access, help)
 end
 
 --[[-------------------------------------------------------------------------
 Plaer bindings
 ---------------------------------------------------------------------------]]
-local PLAYER = FindMetaTable( "Player" )
-
-function PLAYER:SLCHasAccess( access )
-	return SLCAuth.HasAccess( self, access )
+local PLAYER = FindMetaTable("Player")
+function PLAYER:SLCHasAccess(access)
+    return SLCAuth.HasAccess(self, access)
 end
 
 --[[-------------------------------------------------------------------------
 Default library
 ---------------------------------------------------------------------------]]
-SLCAuth.AddLibrary( "slcal", "SLC AL", {
-	CheckAccess = function( ply, access )
-		return ply:IsSuperAdmin()
-	end,
-} )
+SLCAuth.AddLibrary("slcal", "SLC AL", {
+    CheckAccess = function(ply, access) return ply:IsSuperAdmin() end,
+})
 
-timer.Simple( 0, function()
-	SLCAuth.RegisterAccess( "slc spectatescp", "Allows player to bypass anti-ghosting system and let them spectate SCPs" )
-	SLCAuth.RegisterAccess( "slc spectateinfo", "Allows player to see details about player they are currently spectating" )
-	SLCAuth.RegisterAccess( "slc skipintro", "Allows player to skip info screen at the start of the round" )
-	SLCAuth.RegisterAccess( "slc afkdontkick", "Don't kick players with this access if they are AFK" )
-	SLCAuth.RegisterAccess( "slc manageal", "Allows players change settings of SLC Auth Library" )
-	SLCAuth.RegisterAccess( "slc gamemodeconfig", "Allows players change server setting through ConVar editor" )
-	SLCAuth.RegisterAccess( "slc adminmode", "Allows players to enter admin mode" )
-end )
+timer.Simple(0, function()
+    SLCAuth.RegisterAccess("slc spectatescp", "Allows player to bypass anti-ghosting system and let them spectate SCPs")
+    SLCAuth.RegisterAccess("slc spectateinfo", "Allows player to see details about player they are currently spectating")
+    SLCAuth.RegisterAccess("slc skipintro", "Allows player to skip info screen at the start of the round")
+    SLCAuth.RegisterAccess("slc afkdontkick", "Don't kick players with this access if they are AFK")
+    SLCAuth.RegisterAccess("slc manageal", "Allows players change settings of SLC Auth Library")
+    SLCAuth.RegisterAccess("slc gamemodeconfig", "Allows players change server setting through ConVar editor")
+    SLCAuth.RegisterAccess("slc adminmode", "Allows players to enter admin mode")
+end)
 --[[-------------------------------------------------------------------------
 Settings window --TODO
 ---------------------------------------------------------------------------]]
-/*if CLIENT then
+--[[if CLIENT then
 	local UpdateAuthLibrarySettings
 
 	timer.Simple( 0, function()
@@ -170,4 +153,4 @@ if SERVER then
 			
 		end
 	end )
-end*/
+end]]

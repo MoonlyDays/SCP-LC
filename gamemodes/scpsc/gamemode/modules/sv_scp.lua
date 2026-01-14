@@ -1,363 +1,274 @@
-local SCPObjects = {}
+﻿local SCPObjects = {}
 local TransmitSCPS = {}
-
 local SCP_VALID_ENTRIES = {
-	base_speed = true,
-	run_speed = true,
-	base_health = true,
-	max_health = true,
-	jump_power = true,
-	crouch_speed = true,
-	no_ragdoll = true,
-	model_scale = true,
-	hands_model = true,
-	prep_freeze = true,
-	no_spawn = true,
-	no_model = true,
-	no_swep = true,
-	no_strip = true,
-	no_select = true,
-	no_draw = true,
-	allow_chat = true,
-	scp_human = true,
-	no_damage_forces = true,
-	dynamic_spawn = true,
-	can_interact = true,
-	reward_override = true,
-	disable_overload = true,
-	no_chase = true,
-	hide = true,
-	avoid = true,
-	buff_scale = true,
-	prot_scale = true,
+    base_speed = true,
+    run_speed = true,
+    base_health = true,
+    max_health = true,
+    jump_power = true,
+    crouch_speed = true,
+    no_ragdoll = true,
+    model_scale = true,
+    hands_model = true,
+    prep_freeze = true,
+    no_spawn = true,
+    no_model = true,
+    no_swep = true,
+    no_strip = true,
+    no_select = true,
+    no_draw = true,
+    allow_chat = true,
+    scp_human = true,
+    no_damage_forces = true,
+    dynamic_spawn = true,
+    can_interact = true,
+    reward_override = true,
+    disable_overload = true,
+    no_chase = true,
+    hide = true,
+    avoid = true,
+    buff_scale = true,
+    prot_scale = true,
 }
 
 local SCP_DYNAMIC_VARS = {}
 local SCP_DYNAMIC_DEFAULT = {}
-
 function UpdateDynamicVars()
-	print( "Updating SCPs dynamic vars" )
-
-	if !file.Exists( "slc/scp_override.txt", "DATA" ) then
-		WriteINI( "slc/scp_override.txt", {} )
-	end
-
-	if DEVELOPER_MODE then
-		print( "Dev mode is enabled! Overwritting INI values..." )
-	else
-		local override = LoadINI( "slc/scp_override.txt" )
-		for k, v in pairs( override ) do
-			if istable( v ) then
-				for _k, _v in pairs( v ) do
-					if !SCP_DYNAMIC_VARS[k] then
-						SCP_DYNAMIC_VARS[k] = {}
-					end
-
-					SCP_DYNAMIC_VARS[k][_k] = _v
-				end
-			end
-		end
-	end
+    print("Updating SCPs dynamic vars")
+    if not file.Exists("slc/scp_override.txt", "DATA") then WriteINI("slc/scp_override.txt", {}) end
+    if DEVELOPER_MODE then
+        print("Dev mode is enabled! Overwritting INI values...")
+    else
+        local override = LoadINI("slc/scp_override.txt")
+        for k, v in pairs(override) do
+            if istable(v) then
+                for _k, _v in pairs(v) do
+                    if not SCP_DYNAMIC_VARS[k] then SCP_DYNAMIC_VARS[k] = {} end
+                    SCP_DYNAMIC_VARS[k][_k] = _v
+                end
+            end
+        end
+    end
 end
 
 function SaveDynamicVars()
-	WriteINI( "slc/scp_default.txt", SCP_DYNAMIC_DEFAULT, false, ".", "For reference use only (this file is not used anywhere)! Use scp_override.txt instead.\n# Copy and paste SCP header (e.g. [SCP173]), then just below it paste attribute that you want to edit and change its value" )
+    WriteINI("slc/scp_default.txt", SCP_DYNAMIC_DEFAULT, false, ".", "For reference use only (this file is not used anywhere)! Use scp_override.txt instead.\n# Copy and paste SCP header (e.g. [SCP173]), then just below it paste attribute that you want to edit and change its value")
 end
 
-hook.Add( "SLCVersionChanged", "SCPOverride", function( new, old )
-	file.Rename( "slc/scp_override.txt", "slc/scp_override_old.txt" )
-end )
+hook.Add("SLCVersionChanged", "SCPOverride", function(new, old) file.Rename("slc/scp_override.txt", "slc/scp_override_old.txt") end)
+function SendSCPList(ply)
+    local data = {}
+    for i, v in ipairs(TransmitSCPS) do
+        local obj = SCPObjects[v]
+        table.insert(data, {
+            name = v,
+            model = obj.model,
+            hp = obj.basestats.base_health,
+            speed = obj.basestats.base_speed,
+            no_select = obj.basestats.no_select,
+            hide = obj.basestats.hide,
+            buff_scale = obj.basestats.buff_scale,
+            prot_scale = obj.basestats.prot_scale,
+        })
+    end
 
-function SendSCPList( ply )
-	local data = {}
-
-	for i, v in ipairs( TransmitSCPS ) do
-		local obj = SCPObjects[v]
-		table.insert( data, {
-			name = v,
-			model = obj.model,
-			hp = obj.basestats.base_health,
-			speed = obj.basestats.base_speed,
-			no_select = obj.basestats.no_select,
-			hide = obj.basestats.hide,
-			buff_scale = obj.basestats.buff_scale,
-			prot_scale = obj.basestats.prot_scale,
-		} )
-	end
-
-	net.Start( "SCPList" )
-		net.WriteTable( data )
-
-	if ply then
-		net.Send( ply )
-	else
-		net.Broadcast()
-	end
+    net.Start("SCPList")
+    net.WriteTable(data)
+    if ply then
+        net.Send(ply)
+    else
+        net.Broadcast()
+    end
 end
 
-function GetSCP( name )
-	return SCPObjects[name]
+function GetSCP(name)
+    return SCPObjects[name]
 end
 
-function RegisterSCP( name, model, weapon, static_stats, dynamic_stats, custom_callback, post_callback )
-	--RegisterSCP( "name", "path_to_model", "SWEP_class_name", {entry = value} )
-	if !name or !model or !weapon or !static_stats then return end
-
-	dynamic_stats = dynamic_stats or {}
-
-	if SCPObjects[name] then
-		error( "SCP " .. name .. "is already registered!" )
-	end
-
-	if !_LANG["english"]["CLASSES"][name] or !_LANG["english"]["CLASS_OBJECTIVES"][name] then
-		MsgC( Color( 255, 50, 50 ), "No language entry for: "..name, "\n" )
-	end
-
-	local spawn = _G["SPAWN_"..name]
-	if !static_stats.no_spawn and !dynamic_stats.no_spawn and !static_stats.dynamic_spawn and !dynamic_stats.dynamic_spawn then
-		if !spawn or ( !isvector( spawn ) and !istable( spawn ) ) then
-			error( "No spawn position entry for: "..name )
-		end
-	end
-
-	CLASSES[name] = name
-
-	local scp = ObjectSCP( name, model, weapon, spawn, static_stats, dynamic_stats )
-
-	if custom_callback and isfunction( custom_callback ) then
-		scp:SetCallback( custom_callback )
-	end
-
-	if post_callback and isfunction( post_callback ) then
-		scp:SetCallback( post_callback, true )
-	end
-
-	SCPObjects[name] = scp
-	table.insert( TransmitSCPS, name )
-
-	if !scp.basestats.no_select then
-		table.insert( SCPS, name )
-	end
-
-	print( name.." has been registered!" )
-	return true
+function RegisterSCP(name, model, weapon, static_stats, dynamic_stats, custom_callback, post_callback)
+    --RegisterSCP( "name", "path_to_model", "SWEP_class_name", {entry = value} )
+    if not name or not model or not weapon or not static_stats then return end
+    dynamic_stats = dynamic_stats or {}
+    if SCPObjects[name] then error("SCP " .. name .. "is already registered!") end
+    if not _LANG["english"]["CLASSES"][name] or not _LANG["english"]["CLASS_OBJECTIVES"][name] then MsgC(Color(255, 50, 50), "No language entry for: " .. name, "\n") end
+    local spawn = _G["SPAWN_" .. name]
+    if not static_stats.no_spawn and not dynamic_stats.no_spawn and not static_stats.dynamic_spawn and not dynamic_stats.dynamic_spawn then if not spawn or (not isvector(spawn) and not istable(spawn)) then error("No spawn position entry for: " .. name) end end
+    CLASSES[name] = name
+    local scp = ObjectSCP(name, model, weapon, spawn, static_stats, dynamic_stats)
+    if custom_callback and isfunction(custom_callback) then scp:SetCallback(custom_callback) end
+    if post_callback and isfunction(post_callback) then scp:SetCallback(post_callback, true) end
+    SCPObjects[name] = scp
+    table.insert(TransmitSCPS, name)
+    if not scp.basestats.no_select then table.insert(SCPS, name) end
+    print(name .. " has been registered!")
+    return true
 end
-
 
 -----SCP class-----
 ObjectSCP = {}
 ObjectSCP.__index = ObjectSCP
+function ObjectSCP:Create(name, model, weapon, pos, static_stats, dynamic_stats)
+    local scp = setmetatable({}, ObjectSCP)
+    scp.Create = function() end
+    scp.name = name
+    scp.model = model
+    scp.swep = weapon
+    scp.spawnpos = pos
+    scp.basestats = {}
+    scp.callback = function() end
+    scp.post = function() end
+    if not SCP_DYNAMIC_VARS[name] then SCP_DYNAMIC_VARS[name] = {} end
+    SCP_DYNAMIC_DEFAULT[name] = SCP_DYNAMIC_DEFAULT[name] or {}
+    local dv = SCP_DYNAMIC_VARS[name]
+    local dd = SCP_DYNAMIC_DEFAULT[name]
+    for k, v in pairs(dynamic_stats) do
+        if SCP_VALID_ENTRIES[k] then
+            local istab = istable(v)
+            local var = istab and v.var or v
+            dd[k] = var
+            if dv[k] then
+                var = dv[k]
+            else
+                dv[k] = var
+            end
 
-function ObjectSCP:Create( name, model, weapon, pos, static_stats, dynamic_stats )
-	local scp = setmetatable( {}, ObjectSCP )
-	scp.Create = function() end
+            if istab then
+                if v.min or v.max then
+                    if not isnumber(var) then
+                        ErrorNoHalt(name .. " entry: " .. k .. ". Number expected, got " .. type(var))
+                        continue
+                    end
 
-	scp.name = name
-	scp.model = model
-	scp.swep = weapon
-	scp.spawnpos = pos
-	scp.basestats = {}
+                    if v.min then var = math.max(v.min, var) end
+                    if v.max then var = math.min(v.max, var) end
+                end
+            end
 
-	scp.callback = function() end
-	scp.post = function() end
+            scp.basestats[k] = var
+        else
+            print("Invalid dynamic stat entry '" .. k .. "' for " .. name)
+        end
+    end
 
-	if !SCP_DYNAMIC_VARS[name] then
-		SCP_DYNAMIC_VARS[name] = {}
-	end
-
-	SCP_DYNAMIC_DEFAULT[name] = SCP_DYNAMIC_DEFAULT[name] or {}
-
-	local dv = SCP_DYNAMIC_VARS[name]
-	local dd = SCP_DYNAMIC_DEFAULT[name]
-
-	for k, v in pairs( dynamic_stats ) do
-		if SCP_VALID_ENTRIES[k] then
-			local istab = istable( v )
-			local var = istab and v.var or v
-
-			dd[k] = var
-
-			if dv[k] then
-				var = dv[k]
-			else
-				dv[k] = var
-			end
-
-			if istab then
-				if v.min or v.max then
-					if !isnumber( var ) then
-						ErrorNoHalt( name.." entry: "..k..". Number expected, got "..type( var ) )
-						continue
-					end
-
-					if v.min then
-						var = math.max( v.min, var )
-					end
-
-					if v.max then
-						var = math.min( v.max, var )
-					end
-				end
-			end
-
-			scp.basestats[k] = var
-		else
-			print( "Invalid dynamic stat entry '"..k.."' for "..name )
-		end
-	end
-
-	for k, v in pairs( static_stats ) do
-		if SCP_VALID_ENTRIES[k] then
-			scp.basestats[k] = v
-		else
-			print( "Invalid static stat entry '"..k.."' for "..name )
-		end
-	end
-
-	return scp
+    for k, v in pairs(static_stats) do
+        if SCP_VALID_ENTRIES[k] then
+            scp.basestats[k] = v
+        else
+            print("Invalid static stat entry '" .. k .. "' for " .. name)
+        end
+    end
+    return scp
 end
 
-function ObjectSCP:SetCallback( cb, post )
-	if post then
-		self.post = cb
-	else
-		self.callback = cb
-	end
+function ObjectSCP:SetCallback(cb, post)
+    if post then
+        self.post = cb
+    else
+        self.callback = cb
+    end
 end
 
-local function setup_scp_internal( self, ply, ... )
-	local args = {...}
-	local basestats = table.Copy( self.basestats )
+local function setup_scp_internal(self, ply, ...)
+    local args = {...}
+    local basestats = table.Copy(self.basestats)
+    if self.callback and self.callback(ply, basestats, ...) then return end
+    ply:UnSpectate()
+    ply:Cleanup(basestats.no_strip == true)
+    local pos = self.spawnpos
+    if pos and not basestats.no_spawn then
+        if istable(pos) then pos = table.Random(pos) end
+        ply:Spawn()
+        ply:SetPos(pos)
+    elseif basestats.dynamic_spawn and isvector(args[1]) then
+        ply:Spawn()
+        ply:SetPos(args[1])
+    end
 
-	if self.callback and self.callback( ply, basestats, ... ) then return end
+    ply:SetSCPTeam(TEAM_SCP)
+    ply:SetSCPClass(CLASSES[self.name])
+    ply:SetSCPHuman(basestats.scp_human == true)
+    ply:SetSCPChat(basestats.allow_chat == true)
+    ply:SetSCPChase(basestats.no_chase ~= true)
+    ply:SetSCPCanInteract(basestats.can_interact == true)
+    ply:SetSCPDisableOverload(basestats.disable_overload == true)
+    if not basestats.no_model then
+        ply:SetModel(self.model)
+        for i = 1, ply:GetNumBodyGroups() do
+            ply:SetBodygroup(i, 0)
+        end
+    end
 
-	ply:UnSpectate()
-	ply:Cleanup( basestats.no_strip == true )
+    ply:SetModelScale(basestats.model_scale or 1)
+    ply:SetHealth(basestats.base_health or 1500)
+    ply:SetMaxHealth(basestats.max_health or 1500)
+    ply:SetBaseSpeed(basestats.base_speed or 200, basestats.run_speed or basestats.base_speed or 200, 0.4)
+    ply:SetJumpPower(basestats.jump_power or 200)
+    if not basestats.no_swep then
+        ply:Give(self.swep)
+        ply:SelectWeapon(self.swep)
+    end
 
-	local pos = self.spawnpos
-	if pos and !basestats.no_spawn then
-		if istable( pos ) then
-			pos = table.Random( pos )
-		end
-
-		ply:Spawn()
-		ply:SetPos( pos )
-	elseif basestats.dynamic_spawn and isvector( args[1] ) then
-		ply:Spawn()
-		ply:SetPos( args[1] )
-	end
-
-	ply:SetSCPTeam( TEAM_SCP )
-	ply:SetSCPClass( CLASSES[self.name] )
-
-	ply:SetSCPHuman( basestats.scp_human == true )
-	ply:SetSCPChat( basestats.allow_chat == true )
-	ply:SetSCPChase( basestats.no_chase != true )
-	ply:SetSCPCanInteract( basestats.can_interact == true )
-	ply:SetSCPDisableOverload( basestats.disable_overload == true )
-
-	if !basestats.no_model then
-		ply:SetModel( self.model )
-
-		for i = 1, ply:GetNumBodyGroups() do
-			ply:SetBodygroup( i, 0 )
-		end
-	end
-
-	ply:SetModelScale( basestats.model_scale or 1 )
-
-	ply:SetHealth( basestats.base_health or 1500 )
-	ply:SetMaxHealth( basestats.max_health or 1500 )
-
-	ply:SetBaseSpeed( basestats.base_speed or 200, basestats.run_speed or basestats.base_speed or 200, 0.4 )
-	ply:SetJumpPower( basestats.jump_power or 200 )
-
-	if !basestats.no_swep then
-		ply:Give( self.swep )
-		ply:SelectWeapon( self.swep )
-	end
-
-	if basestats.prep_freeze and ROUND.preparing then
-		ply:DisableControls( "scp_prep_freeze", CAMERA_MASK )
-	end
-
-	ply:SetArmor( 0 )
-
-	ply:Flashlight( false )
-	ply:AllowFlashlight( false )
-
-	ply:SetNoDraw( basestats.no_draw == true )
-
-	//if basestats.no_damage_forces == true then
-		ply:AddEFlags( EFL_NO_DAMAGE_FORCES )
-	//end
-
-	ply:SetSCPNoRagdoll( basestats.no_ragdoll == true )
-
-	if isnumber( basestats.reward_override ) then
-		ply:SetProperty( "reward_override", basestats.reward_override )
-	end
-
-	//ply.handsmodel = basestats.hands_model
-	ply:SetupHands()
-
-	ply.SCPData = basestats
-
-	hook.Run( "SLCSCPSetup", ply, self.name )
-	
-	if self.post then
-		self.post( ply, ... )
-	end
+    if basestats.prep_freeze and ROUND.preparing then ply:DisableControls("scp_prep_freeze", CAMERA_MASK) end
+    ply:SetArmor(0)
+    ply:Flashlight(false)
+    ply:AllowFlashlight(false)
+    ply:SetNoDraw(basestats.no_draw == true)
+    --if basestats.no_damage_forces == true then
+    ply:AddEFlags(EFL_NO_DAMAGE_FORCES)
+    --end
+    ply:SetSCPNoRagdoll(basestats.no_ragdoll == true)
+    if isnumber(basestats.reward_override) then ply:SetProperty("reward_override", basestats.reward_override) end
+    --ply.handsmodel = basestats.hands_model
+    ply:SetupHands()
+    ply.SCPData = basestats
+    hook.Run("SLCSCPSetup", ply, self.name)
+    if self.post then self.post(ply, ...) end
 end
 
-function ObjectSCP:SetupPlayer( ply, instant, ... )
-	EnableSCPHook( self.name )
+function ObjectSCP:SetupPlayer(ply, instant, ...)
+    EnableSCPHook(self.name)
+    if instant then
+        setup_scp_internal(self, ply, ...)
+    else
+        ply:KillSilent()
+        ply:UnSpectate()
+        ply:SetPos(ZERO_POS)
+        ply:SetSCPTeam(TEAM_SCP)
+        ply:SetSCPClass(CLASSES[self.name])
+        ply:SetProperty("spawning_scp", {
+            obj = self
+        })
 
-	if instant then
-		setup_scp_internal( self, ply, ... )
-	else
-		ply:KillSilent()
-		ply:UnSpectate()
-		ply:SetPos( ZERO_POS )
-
-		ply:SetSCPTeam( TEAM_SCP )
-		ply:SetSCPClass( CLASSES[self.name] )
-
-		ply:SetProperty( "spawning_scp", { obj = self } )
-		InfoScreen( ply, "spawn", INFO_SCREEN_DURATION )
-
-		local args = {...}
-		ply:AddTimer( "Spawn", INFO_SCREEN_DURATION, 1, function()
-			setup_scp_internal( self, ply, unpack( args ) )
-		end )
-	end
+        InfoScreen(ply, "spawn", INFO_SCREEN_DURATION)
+        local args = {...}
+        ply:AddTimer("Spawn", INFO_SCREEN_DURATION, 1, function() setup_scp_internal(self, ply, unpack(args)) end)
+    end
 end
 
-setmetatable( ObjectSCP, { __call = ObjectSCP.Create } )
+setmetatable(ObjectSCP, {
+    __call = ObjectSCP.Create
+})
+
 --------------------------------------------------------------------------------
-hook.Add( "SLCRound", "SLCSCPFreeze", function()
-	for i, v in ipairs( player.GetAll() ) do
-		v:StopDisableControls( "scp_prep_freeze" )
-	end
-end )
+hook.Add("SLCRound", "SLCSCPFreeze", function()
+    for i, v in ipairs(player.GetAll()) do
+        v:StopDisableControls("scp_prep_freeze")
+    end
+end)
 
-hook.Add( "SLCGamemodeLoaded", "SLCSCPModule", function()
-	UpdateDynamicVars()
+hook.Add("SLCGamemodeLoaded", "SLCSCPModule", function()
+    UpdateDynamicVars()
+    hook.Run("RegisterSCP")
+    SaveDynamicVars()
+    --if SetupForceSCP then SetupForceSCP() end
+    hook.Run("SetupForceSCP")
+    --for i, v in ipairs( player.GetAll() ) do
+    SendSCPList()
+    --end
+end)
 
-	hook.Run( "RegisterSCP" )
-	SaveDynamicVars()
-
-	//if SetupForceSCP then SetupForceSCP() end
-	hook.Run( "SetupForceSCP" )
-
-	//for i, v in ipairs( player.GetAll() ) do
-		SendSCPList()
-	//end
-end )
-
-hook.Add( "SLCFactoryReset", "SLCResetSCPs", function()
-	print( "Deleting SCP settings..." )
-
-	file.Delete( "slc/scp_override.txt" )
-	file.Delete( "slc/scp_default.txt" )
-end )
+hook.Add("SLCFactoryReset", "SLCResetSCPs", function()
+    print("Deleting SCP settings...")
+    file.Delete("slc/scp_override.txt")
+    file.Delete("slc/scp_default.txt")
+end)

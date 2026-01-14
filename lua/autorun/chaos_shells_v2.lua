@@ -1,4 +1,4 @@
-player_manager.AddValidModel("ChaosInsurgency | Captain", "models/player/1000shells/captan_ci.mdl")
+﻿player_manager.AddValidModel("ChaosInsurgency | Captain", "models/player/1000shells/captan_ci.mdl")
 list.Set("PlayerOptionsModel", "ChaosInsurgency | Captain", "models/player/1000shells/captan_ci.mdl")
 player_manager.AddValidModel("ChaosInsurgency | Scout", "models/player/1000shells/scout_ci.mdl")
 list.Set("PlayerOptionsModel", "ChaosInsurgency | Scout", "models/player/1000shells/scout_ci.mdl")

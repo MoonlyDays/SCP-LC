@@ -1,23 +1,18 @@
-AddCSLuaFile()
-
+﻿AddCSLuaFile()
 ENT.Type = "brush"
-
 function ENT:Initialize()
-	if SERVER then
-		self:SetTrigger( true )
-	end
+    if SERVER then self:SetTrigger(true) end
 end
 
-function ENT:SetTriggerBounds( mins, maxs, bounds )
-	self:SetCollisionBounds( mins, maxs )
-	self:UseTriggerBounds( !!bounds, bounds or 0 )
+function ENT:SetTriggerBounds(mins, maxs, bounds)
+    self:SetCollisionBounds(mins, maxs)
+    self:UseTriggerBounds(not not bounds, bounds or 0)
 end
 
 function ENT:UpdateTransmitState()
-	return TRANSMIT_NEVER
+    return TRANSMIT_NEVER
 end
-
-/*function ENT:StartTouch( ent )
+--[[function ENT:StartTouch( ent )
 	
 end
 
@@ -27,4 +22,4 @@ end
 
 function ENT:EndTouch( ent )
 	
-end*/
+end]]

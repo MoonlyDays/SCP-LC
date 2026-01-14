@@ -1,4 +1,4 @@
---[[-------------------------------------------------------------------------
+﻿--[[-------------------------------------------------------------------------
 
 								READ CAREFULLY!
 
@@ -89,267 +89,259 @@ To get registered SCP:
 					... - varargs passed to callback if ObjectSCP has one
 
 ---------------------------------------------------------------------------]]
-
 --BASE_SCP_SPEED = 175 ~ 77.7% BASE_RUN_SPEED
-hook.Add( "RegisterSCP", "RegisterBaseSCPs", function()
-	RegisterSCP( "SCP023", "models/Novux/023/Novux_SCP-023.mdl", "weapon_scp_023", {
-		jump_power = 200,
-		prep_freeze = true,
-		no_chase = true,
-	}, {
-		base_health = 2550,
-		max_health = 2550,
-		base_speed = 180,
-		buff_scale = 1.25,
-	}, nil, function( ply )
-		ply:SetRenderMode( RENDERMODE_TRANSCOLOR )
-		ply:SetCustomCollisionCheck( true )
-	end )
+hook.Add("RegisterSCP", "RegisterBaseSCPs", function()
+    RegisterSCP("SCP023", "models/Novux/023/Novux_SCP-023.mdl", "weapon_scp_023", {
+        jump_power = 200,
+        prep_freeze = true,
+        no_chase = true,
+    }, {
+        base_health = 2550,
+        max_health = 2550,
+        base_speed = 180,
+        buff_scale = 1.25,
+    }, nil, function(ply)
+        ply:SetRenderMode(RENDERMODE_TRANSCOLOR)
+        ply:SetCustomCollisionCheck(true)
+    end)
 
-	RegisterSCP( "SCP049", "models/vinrax/player/scp049_player.mdl", "weapon_scp_049", {
-		jump_power = 200,
-		allow_chat = true,
-		can_interact = true,
-		no_chase = true,
-	}, {
-		base_health = 2000,
-		max_health = 2000,
-		base_speed = 180,
-		buff_scale = 0.9,
-	} )
+    RegisterSCP("SCP049", "models/vinrax/player/scp049_player.mdl", "weapon_scp_049", {
+        jump_power = 200,
+        allow_chat = true,
+        can_interact = true,
+        no_chase = true,
+    }, {
+        base_health = 2000,
+        max_health = 2000,
+        base_speed = 180,
+        buff_scale = 0.9,
+    })
 
-	RegisterSCP( "SCP0492", "models/player/zombie_classic.mdl", "weapon_scp_0492", {
-		jump_power = 200,
-		dynamic_spawn = true,
-		no_select = true,
-		no_chase = true,
-		reward_override = 3,
-	}, {
-		base_health = 400,
-		max_health = 400,
-		base_speed = 165,
-	}, function( ply, basestats, pos, scp049, zombie_type, hp, speed, dmg, ls, model, skin )
-		basestats.base_health = math.Round( basestats.base_health * hp )
-		basestats.max_health = math.Round( basestats.max_health * hp )
-		basestats.base_speed = math.Round( basestats.base_speed * speed )
-	end, function( ply, pos, scp049, zombie_type, hp, speed, dmg, ls, model, skin )
-		local wep = ply:GetSCPWeapon()
-		if IsValid( wep ) then
-			wep:SetSCP049( scp049 )
-			wep:SetZombieType( zombie_type )
-			wep.DamageMultiplier = dmg or 1
-			wep.LifeSteal = ls or 0
-		end
+    RegisterSCP("SCP0492", "models/player/zombie_classic.mdl", "weapon_scp_0492", {
+        jump_power = 200,
+        dynamic_spawn = true,
+        no_select = true,
+        no_chase = true,
+        reward_override = 3,
+    }, {
+        base_health = 400,
+        max_health = 400,
+        base_speed = 165,
+    }, function(ply, basestats, pos, scp049, zombie_type, hp, speed, dmg, ls, model, skin)
+        basestats.base_health = math.Round(basestats.base_health * hp)
+        basestats.max_health = math.Round(basestats.max_health * hp)
+        basestats.base_speed = math.Round(basestats.base_speed * speed)
+    end, function(ply, pos, scp049, zombie_type, hp, speed, dmg, ls, model, skin)
+        local wep = ply:GetSCPWeapon()
+        if IsValid(wep) then
+            wep:SetSCP049(scp049)
+            wep:SetZombieType(zombie_type)
+            wep.DamageMultiplier = dmg or 1
+            wep.LifeSteal = ls or 0
+        end
 
-		if model then
-			ply:SetModel( model )
-		end
+        if model then ply:SetModel(model) end
+        if skin then ply:SetSkin(skin) end
+    end)
 
-		if skin then
-			ply:SetSkin( skin )
-		end
-	end )
+    RegisterSCP("SCP058", "models/player/alski/scp/scp_058.mdl", "weapon_scp_058", {
+        jump_power = 200,
+        prep_freeze = true,
+    }, {
+        base_health = 2900,
+        max_health = 2900,
+        base_speed = 175,
+    })
 
-	RegisterSCP( "SCP058", "models/player/alski/scp/scp_058.mdl", "weapon_scp_058", {
-		jump_power = 200,
-		prep_freeze = true,
-	}, {
-		base_health = 2900,
-		max_health = 2900,
-		base_speed = 175,
-	} )
+    --RegisterSCP( "SCP066", "models/player/mrsilver/scp_066pm/scp_066_pm.mdl", "weapon_scp_066", {
+    RegisterSCP("SCP066", "models/cpthazama/scp/066.mdl", "weapon_scp_066", {
+        jump_power = 200,
+        no_ragdoll = true,
+        prep_freeze = true,
+        no_chase = true,
+    }, {
+        base_health = 2600,
+        max_health = 2600,
+        base_speed = 165,
+        buff_scale = 0.9,
+    })
 
-	//RegisterSCP( "SCP066", "models/player/mrsilver/scp_066pm/scp_066_pm.mdl", "weapon_scp_066", {
-	RegisterSCP( "SCP066", "models/cpthazama/scp/066.mdl", "weapon_scp_066", {
-		jump_power = 200,
-		no_ragdoll = true,
-		prep_freeze = true,
-		no_chase = true,
-	}, {
-		base_health = 2600,
-		max_health = 2600,
-		base_speed = 165,
-		buff_scale = 0.9,
-	} )
+    RegisterSCP("SCP096", "models/shaklin/scp/096/scp_096.mdl", "weapon_scp_096", {
+        jump_power = 200,
+        no_damage_forces = true,
+        no_chase = true,
+        avoid = {"SCP173"},
+    }, {
+        base_health = 1900,
+        max_health = 1900,
+        base_speed = 125,
+        buff_scale = 0.4,
+    })
 
-	RegisterSCP( "SCP096", "models/shaklin/scp/096/scp_096.mdl", "weapon_scp_096", {
-		jump_power = 200,
-		no_damage_forces = true,
-		no_chase = true,
-		avoid = { "SCP173" },
-	}, {
-		base_health = 1900,
-		max_health = 1900,
-		base_speed = 125,
-		buff_scale = 0.4,
-	} )
+    RegisterSCP("SCP106", "models/danx91/scp/scp_106.mdl", "weapon_scp_106", {
+        jump_power = 200,
+        no_damage_forces = true,
+    }, {
+        base_health = 1000,
+        max_health = 1000,
+        base_speed = 150,
+        buff_scale = 0.1,
+    }, nil, function(ply) ply:SetCustomCollisionCheck(true) end)
 
-	RegisterSCP( "SCP106", "models/danx91/scp/scp_106.mdl", "weapon_scp_106", {
-		jump_power = 200,
-		no_damage_forces = true,
-	}, {
-		base_health = 1000,
-		max_health = 1000,
-		base_speed = 150,
-		buff_scale = 0.1,
-	}, nil, function( ply )
-		ply:SetCustomCollisionCheck( true )
-	end )
+    RegisterSCP("SCP173", "models/scp/173.mdl", "weapon_scp_173", {
+        jump_power = 200,
+        no_damage_forces = true,
+        no_chase = true,
+        avoid = {"SCP096"},
+    }, {
+        base_health = 4000,
+        max_health = 4000,
+        base_speed = 500,
+        buff_scale = 0.15,
+        prot_scale = 0.25,
+    })
 
-	RegisterSCP( "SCP173", "models/scp/173.mdl", "weapon_scp_173", {
-		jump_power = 200,
-		no_damage_forces = true,
-		no_chase = true,
-		avoid = { "SCP096" },
-	}, {
-		base_health = 4000,
-		max_health = 4000,
-		base_speed = 500,
-		buff_scale = 0.15,
-		prot_scale = 0.25,
-	} )
+    RegisterSCP("SCP457", "models/cultist/scp/scp_457.mdl", "weapon_scp_457", {
+        jump_power = 200,
+        no_ragdoll = true,
+    }, {
+        base_health = 2300,
+        max_health = 2300,
+        base_speed = 165,
+        buff_scale = 0.85,
+    })
 
-	RegisterSCP( "SCP457", "models/cultist/scp/scp_457.mdl", "weapon_scp_457", {
-		jump_power = 200,
-		no_ragdoll = true,
-	}, {
-		base_health = 2300,
-		max_health = 2300,
-		base_speed = 165,
-		buff_scale = 0.85,
-	} )
+    RegisterSCP("SCP682", "models/danx91/scp/scp_682.mdl", "weapon_scp_682", {
+        jump_power = 200,
+        no_damage_forces = true,
+    }, {
+        base_health = 3500,
+        max_health = 3500,
+        base_speed = 160,
+    })
 
-	RegisterSCP( "SCP682", "models/danx91/scp/scp_682.mdl", "weapon_scp_682", {
-		jump_power = 200,
-		no_damage_forces = true,
-	}, {
-		base_health = 3500,
-		max_health = 3500,
-		base_speed = 160,
-	} )
+    RegisterSCP("SCP8602", "models/props/forest_monster/forest_monster2.mdl", "weapon_scp_8602", {
+        jump_power = 200,
+        prep_freeze = true,
+    }, {
+        base_health = 4600,
+        max_health = 4600,
+        base_speed = 175,
+        buff_scale = 1.25,
+    })
 
-	RegisterSCP( "SCP8602", "models/props/forest_monster/forest_monster2.mdl", "weapon_scp_8602", {
-		jump_power = 200,
-		prep_freeze = true,
-	}, {
-		base_health = 4600,
-		max_health = 4600,
-		base_speed = 175,
-		buff_scale = 1.25,
-	} )
+    RegisterSCP("SCP939", "models/scp/939/unity/unity_scp_939.mdl", "weapon_scp_939", {
+        jump_power = 200,
+        prep_freeze = true,
+        allow_chat = true,
+        no_damage_forces = true,
+    }, {
+        base_health = 3100,
+        max_health = 3100,
+        base_speed = 175,
+    })
 
-	RegisterSCP( "SCP939", "models/scp/939/unity/unity_scp_939.mdl", "weapon_scp_939", {
-		jump_power = 200,
-		prep_freeze = true,
-		allow_chat = true,
-		no_damage_forces = true,
-	}, {
-		base_health = 3100,
-		max_health = 3100,
-		base_speed = 175,
-	} )
+    RegisterSCP("SCP966", "models/player/mishka/966_new.mdl", "weapon_scp_966", {
+        jump_power = 200,
+        no_chase = true,
+    }, {
+        base_health = 1750,
+        max_health = 1750,
+        base_speed = 190,
+        buff_scale = 0.75,
+    })
 
-	RegisterSCP( "SCP966", "models/player/mishka/966_new.mdl", "weapon_scp_966", {
-		jump_power = 200,
-		no_chase = true,
-	}, {
-		base_health = 1750,
-		max_health = 1750,
-		base_speed = 190,
-		buff_scale = 0.75,
-	} )
+    RegisterSCP("SCP24273", "models/player/alski/scp2427-3.mdl", "weapon_scp_24273", {
+        jump_power = 200,
+        prep_freeze = true,
+        no_ragdoll = true,
+    }, {
+        base_health = 4500,
+        max_health = 4500,
+        base_speed = 170,
+    })
 
-	RegisterSCP( "SCP24273", "models/player/alski/scp2427-3.mdl", "weapon_scp_24273", {
-		jump_power = 200,
-		prep_freeze = true,
-		no_ragdoll = true,
-	}, {
-		base_health = 4500,
-		max_health = 4500,
-		base_speed = 170,
-	} )
+    RegisterSCP("SCP3199", "models/player/alski/scp3199/scp3199.mdl", "weapon_scp_3199", {
+        jump_power = 200,
+        prep_freeze = true
+    }, {
+        base_health = 1450,
+        max_health = 1450,
+        base_speed = 215,
+        buff_scale = 0.95,
+    })
 
-	RegisterSCP( "SCP3199", "models/player/alski/scp3199/scp3199.mdl", "weapon_scp_3199", {
-		jump_power = 200,
-		prep_freeze = true
-	}, {
-		base_health = 1450,
-		max_health = 1450,
-		base_speed = 215,
-		buff_scale = 0.95,
-	} )
+    RegisterSCP("SCP808J", "models/player/kanye/kanye.mdl", "weapon_scp_808j", {
+        jump_power = 200,
+        prep_freeze = true,
+        allow_chat = true,
+    }, {
+        base_health = {
+            var = 2000,
+            min = 1500,
+            max = 2500
+        },
+        max_health = {
+            var = 2000,
+            min = 1500,
+            max = 2500
+        },
+        base_speed = {
+            var = 175,
+            min = 150,
+            max = 200
+        },
+        buff_scale = 0.85,
+    })
 
-	RegisterSCP( "SCP808J", "models/player/kanye/kanye.mdl", "weapon_scp_808j", {
-		jump_power = 200,
-		prep_freeze = true,
-		allow_chat = true,
-	}, {
-		base_health = {
-			var = 2000,
-			min = 1500,
-			max = 2500
-		},
-		max_health = {
-			var = 2000,
-			min = 1500,
-			max = 2500
-		},
-		base_speed = {
-			var = 175,
-			min = 150,
-			max = 200
-		},
-		buff_scale = 0.85,
-	} )
+    RegisterSCP("SCP1987J", "models/cktheamazingfrog/player/freddyar/freddyar.mdl", "weapon_scp_1987j", {
+        jump_power = 150,
+        prep_freeze = true,
+        no_select = true,
+        dynamic_spawn = true,
+    }, {
+        base_health = {
+            var = 1350,
+            min = 800,
+            max = 2000
+        },
+        max_health = {
+            var = 1350,
+            min = 800,
+            max = 2000
+        },
+        base_speed = {
+            var = 185,
+            min = 150,
+            max = 220
+        },
+        buff_scale = 0.8,
+        prot_scale = 0.9,
+    }, nil, function(ply)
+        ply:SetBodygroup(0, 0)
+        ply:SetProperty("escape_override", false)
+    end)
 
-	RegisterSCP( "SCP1987J", "models/cktheamazingfrog/player/freddyar/freddyar.mdl", "weapon_scp_1987j", {
-		jump_power = 150,
-		prep_freeze = true,
-		no_select = true,
-		dynamic_spawn = true,
-	}, {
-		base_health = {
-			var = 1350,
-			min = 800,
-			max = 2000
-		},
-		max_health = {
-			var = 1350,
-			min = 800,
-			max = 2000
-		},
-		base_speed = {
-			var = 185,
-			min = 150,
-			max = 220
-		},
-		buff_scale = 0.8,
-		prot_scale = 0.9,
-	}, nil, function( ply )
-		ply:SetBodygroup( 0, 0 )
-		ply:SetProperty( "escape_override", false )
-	end )
-
-	-- William Afton / Springtrap
-	RegisterSCP( "SCP1983J", "models/player/purpleguy.mdl", "weapon_scp_1983j", {
-		jump_power = 200,
-		prep_freeze = true,
-	}, {
-		base_health = {
-			var = 2200,
-			min = 1800,
-			max = 2800
-		},
-		max_health = {
-			var = 2200,
-			min = 1800,
-			max = 2800
-		},
-		base_speed = {
-			var = 170,
-			min = 150,
-			max = 200
-		},
-		buff_scale = 0.85,
-	} )
-end )
+    -- William Afton / Springtrap
+    RegisterSCP("SCP1983J", "models/player/purpleguy.mdl", "weapon_scp_1983j", {
+        jump_power = 200,
+        prep_freeze = true,
+    }, {
+        base_health = {
+            var = 2200,
+            min = 1800,
+            max = 2800
+        },
+        max_health = {
+            var = 2200,
+            min = 1800,
+            max = 2800
+        },
+        base_speed = {
+            var = 170,
+            min = 150,
+            max = 200
+        },
+        buff_scale = 0.85,
+    })
+end)

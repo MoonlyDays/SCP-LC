@@ -1,10 +1,7 @@
-//SCORBOARD = nil
-
+﻿--SCORBOARD = nil
 local function create_scoreboard()
-
 end
-
-/*AddGUISkin( "scoreboard", "template", {
+--[[AddGUISkin( "scoreboard", "template", {
 	create = create_scoreboard,
 	remove = function()
 		SCOREBOARD:Remove()
@@ -15,4 +12,4 @@ end
 	hide = function()
 		SCOREBOARD:Hide()
 	end,
-} )*/
+} )]]

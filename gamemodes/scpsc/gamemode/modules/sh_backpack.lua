@@ -1,39 +1,39 @@
-BACKPACK = {
-	registry = {},
-	lookup = {},
+﻿BACKPACK = {
+    registry = {},
+    lookup = {},
 }
 
 function BACKPACK.Register(name, model, size)
-	local tab = {
-		name = name,
-		model = model,
-		size = size,
-	}
+    local tab = {
+        name = name,
+        model = model,
+        size = size,
+    }
 
-	local id = table.insert(BACKPACK.registry, tab)
-	tab.id = id
-	BACKPACK.lookup[name] = id
+    local id = table.insert(BACKPACK.registry, tab)
+    tab.id = id
+    BACKPACK.lookup[name] = id
 end
 
 function BACKPACK.GetData(id)
-	return BACKPACK.registry[id]
+    return BACKPACK.registry[id]
 end
 
 function BACKPACK.GetID(name)
-	return BACKPACK.lookup[name]
+    return BACKPACK.lookup[name]
 end
 
 function BACKPACK.Create(name, pos)
-	local id = BACKPACK.GetID(name)
-	if id <= 0 then return end
-	local data = BACKPACK.GetData(id)
-	if not data then return end
-	local bp = ents.Create("item_slc_backpack")
-	bp.WorldModel = data.model
-	bp:SetBackpack(id)
-	if pos then bp:SetPos(pos) end
-	bp:Spawn()
-	return bp
+    local id = BACKPACK.GetID(name)
+    if id <= 0 then return end
+    local data = BACKPACK.GetData(id)
+    if not data then return end
+    local bp = ents.Create("item_slc_backpack")
+    bp.WorldModel = data.model
+    bp:SetBackpack(id)
+    if pos then bp:SetPos(pos) end
+    bp:Spawn()
+    return bp
 end
 
 --[[-------------------------------------------------------------------------
