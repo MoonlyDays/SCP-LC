@@ -2720,15 +2720,15 @@ wep.SCP1987J = {
     skills = {
         jumpscare = {
             name = "Jumpscare",
-            info = "Close-range attack that deals damage and applies the Frightened effect, slowing and disorienting the target.",
+            dsc = "Close-range attack that deals damage and applies the Frightened effect, slowing and disorienting the target.",
         },
         power_outage = {
             name = "Power Outage",
-            info = "Create a localized blackout affecting nearby players. Forces doors to close and discharges battery-powered equipment.",
+            dsc = "Create a localized blackout affecting nearby players. Forces doors to close and discharges battery-powered equipment.",
         },
         night_bonus = {
             name = "Night Performer",
-            info = "Passive ability that grants increased movement speed while in dark areas.",
+            dsc = "Passive ability that grants increased movement speed while in dark areas.",
         },
     },
     upgrades = {
@@ -2766,35 +2766,19 @@ wep.SCP808J = {
     skills = {
         attack = {
             name = "Melee Attack",
-            info = "Close-range attack that deals 30 damage to enemies. 3 second cooldown.",
+            dsc = "Close-range attack that deals 30 damage to enemies. 3 second cooldown.",
         },
-        item_spawn = {
-            name = "Blessing",
-            info = "Good Kanye: Spawn a random useful item in front of you. Items include medkits, batteries, flashlights, radios, gas masks, NVGs, and medical supplies. 1 minute cooldown.",
+        secondary = {
+            name = "Secondary Ability",
+            dsc = "Good Kanye: Spawn a random useful item. Evil Kanye: Blast nearby players with deafening sound for 30 seconds.",
         },
-        deafen = {
-            name = "Deafen",
-            info = "Evil Kanye: Blast nearby players with overwhelming sound, deafening them for 30 seconds. Affected players cannot hear any other sounds. 3 minute cooldown, 600 unit radius.",
-        },
-        stamina_drain = {
-            name = "Exhaustion",
-            info = "Good Kanye: Drain all stamina from players within 5 meters, leaving them unable to sprint. 3 minute cooldown.",
-        },
-        cancel_culture = {
-            name = "Cancel Culture",
-            info = "Evil Kanye: Mark the targeted player as 'Canceled'. They take 25% increased damage from all sources for 15 seconds and are highlighted through walls. 45 second cooldown.",
-        },
-        sunday_service = {
-            name = "Sunday Service",
-            info = "Good Kanye Passive: Regenerate 5 HP every 3 seconds while standing still. Requires 1 second of standing still before regeneration begins.",
-        },
-        paparazzi = {
-            name = "Paparazzi",
-            info = "Evil Kanye Passive: The closest enemy is always highlighted through walls with a red outline, allowing you to track their position.",
+        special = {
+            name = "Special Ability",
+            dsc = "Good Kanye: Drain all stamina from nearby players. Evil Kanye: Mark targeted player as 'Canceled' for 25% increased damage.",
         },
         mode = {
             name = "Personality Mode",
-            info = "Automatically switches between Good and Evil Kanye every 1-5 minutes. Good Kanye is supportive with healing and item spawning. Evil Kanye is aggressive with debuffs and target marking.",
+            dsc = "Automatically switches between Good and Evil Kanye every 1-5 minutes. Good Kanye is supportive with healing and item spawning. Evil Kanye is aggressive with debuffs and target marking.",
         },
     },
     upgrades = {
@@ -2832,19 +2816,19 @@ wep.SCP1983J = {
     skills = {
         attack = {
             name = "Slaughter",
-            info = "Close-range attack. Deals 20 base damage (+5 for each target killed). Instantly kills your assigned target.",
+            dsc = "Close-range attack. Deals 20 base damage (+5 for each target killed). Instantly kills your assigned target.",
         },
         highlight = {
             name = "Follow Me",
-            info = "Highlights your current target through walls for 2 seconds. 60 second cooldown.",
+            dsc = "Highlights your current target through walls for 10 seconds. 60 second cooldown.",
         },
         insanity = {
             name = "It's Me",
-            info = "Plays audio that causes insanity effect to nearby enemies, blurring their vision for 10 seconds. 2 minute cooldown.",
+            dsc = "Plays audio that causes insanity effect to nearby enemies, blurring their vision for 10 seconds. 2 minute cooldown.",
         },
         damage = {
             name = "Damage Bonus",
-            info = "Shows your current damage and target kill count.",
+            dsc = "Shows your current damage and target kill count.",
         },
     },
     upgrades = {

@@ -508,6 +508,45 @@ Register languages:
 RegisterLanguage(tab, name, ...)
 ```
 
+### SCP Weapon Localization Structure
+
+**IMPORTANT:** When adding localization for SCP weapons, the `skills` and `upgrades` sections use **different keys** for descriptions:
+
+```lua
+wep.SCPXXX = {
+    name = "SCP-XXX",
+    desc = "Description of the SCP",
+    skills = {
+        skill_name = {
+            name = "Skill Name",
+            dsc = "Skill description",  -- MUST use 'dsc' for skills!
+        },
+    },
+    upgrades = {
+        parse_description = true,
+        upgrade_name = {
+            name = "Upgrade Name",
+            info = "Upgrade description",  -- Use 'info' for upgrades
+        },
+    },
+}
+```
+
+- **Skills section**: Use `dsc` for descriptions (read by `cl_scp_hud.lua:97`)
+- **Upgrades section**: Use `info` for descriptions
+
+The skill names in the localization must match the names used in `hud:AddSkill("skill_name")` calls in the weapon file.
+
+### Adding Localization for New SCPs
+
+When adding a new SCP, ensure these entries exist in **all** language files:
+
+1. **Class name**: `classes.SCPXXX = "SCP-XXX"`
+2. **Class objectives**: `CLASS_OBJECTIVES.SCPXXX = [[...]]`
+3. **Weapon localization**: `wep.SCPXXX = { ... }` with:
+   - `skills` table (using `dsc` for descriptions)
+   - `upgrades` table (using `info` for descriptions)
+
 ## Notes
 
 - **No automated testing** - Manual testing in-game required
