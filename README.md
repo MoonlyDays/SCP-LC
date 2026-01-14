@@ -1,23 +1,30 @@
-# SCP: Lost Control
-SCP: Lost Control is a Garry's Mod gamemode. This gamemode is based on SCP universe.
-<br>
-<br>
-## Steam Workshop
+# SCP: Lost Control (Modified Version)
 
-![Unique Subscriptions](https://img.shields.io/steam/downloads/2402059605?color=brightgreen&style=plastic&label=Unique%20Subscriptions "Unique Workshop Subscriptions")
-![Unique Views](https://img.shields.io/steam/views/2402059605?color=blue&style=plastic&label=Unique%20Views "Unique Workshop Views")
-![Favorites](https://img.shields.io/steam/favorites/2402059605?color=blueviolet&style=plastic&label=Favorites "Workshop Favorites")
+**This is a modified/alternative version of the original SCP: Lost Control gamemode.**
 
-Gamemode is available on Steam Workshop [here](https://steamcommunity.com/sharedfiles/filedetails/?id=2402059605).\
-All content required to play this gamemode can be found on Steam Workshop in [this collection](https://steamcommunity.com/workshop/filedetails/?id=1805981251).
+SCP: Lost Control is a Garry's Mod gamemode based on the SCP universe.
 
-## Discord:
-My discord: https://discord.gg/fAsEAYZ
+## Changes in This Version
 
-You can find there detailed patch notes and description of upcoming updates. You can also contact me directly on this discord if you have any questions or suggestions.
+This fork includes various modifications and enhancements to the original gamemode:
+- Code formatting and linting improvements
+- SCP behavior adjustments (SCPs can communicate with humans)
+- Additional SCP entities and mechanics
+- Various bug fixes and quality-of-life improvements
 
-## Errors and issues
-You can either report bugs here or on discord.
+## Original Gamemode
+
+The original SCP: Lost Control gamemode was created by **GhostInCell**.
+
+- **Steam Workshop (Original):** [SCP: Lost Control](https://steamcommunity.com/sharedfiles/filedetails/?id=2402059605)
+- **Required Content Collection:** [SCP:LC Content](https://steamcommunity.com/workshop/filedetails/?id=1805981251)
+- **Original Discord:** https://discord.gg/fAsEAYZ
+
+For the original, unmodified version with official support and updates, please use the links above.
+
+## Errors and Issues
+
+For issues specific to this modified version, report them in this repository.
 
 ## License
 This gamemode is released under [CC BY-SA license](https://creativecommons.org/licenses/by-sa/3.0/).\
