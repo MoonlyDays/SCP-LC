@@ -231,6 +231,7 @@ function PLAYER:EquipVest(vest, silent, dur)
     local t = self:SCPTeam()
     if t == TEAM_SPEC then return end
     if t == TEAM_SCP and not self:GetSCPHuman() then return end
+    if t == TEAM_SCP and self.SCPData and self.SCPData.no_vest then return end
     if isstring(vest) then vest = VEST.GetID(vest) end
     local data = VEST.GetData(vest)
     if data then

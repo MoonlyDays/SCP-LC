@@ -353,6 +353,7 @@ hook.Add("RegisterSCP", "RegisterBaseSCPs", function()
         can_interact = true,
         allow_chat = true,
         no_chase = true,
+        no_vest = true,
     }, {
         base_health = {
             var = 1500,

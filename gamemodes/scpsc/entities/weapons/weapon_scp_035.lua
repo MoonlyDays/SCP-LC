@@ -9,6 +9,9 @@ SWEP.AttackRange = 75
 SWEP.AttackDamage = 25
 SWEP.CorrosionDuration = 8
 SWEP.CorrosionDamage = 3
+
+local CORROSION_DURATION = SWEP.CorrosionDuration
+local CORROSION_DAMAGE = SWEP.CorrosionDamage
 function SWEP:SetupDataTables()
     self:CallBaseClass("SetupDataTables")
 end
@@ -21,6 +24,10 @@ end
 
 function SWEP:Think()
     if CLIENT or ROUND.preparing or ROUND.post then return end
+end
+
+function SWEP:Holster(wep)
+    return true
 end
 
 local attack_trace = {}
@@ -63,7 +70,7 @@ end
 Effects
 ---------------------------------------------------------------------------]]
 EFFECTS.RegisterEffect("scp035_corrosion", {
-    duration = SWEP.CorrosionDuration,
+    duration = CORROSION_DURATION,
     stacks = 0,
     tiers = {
         {
@@ -83,7 +90,7 @@ EFFECTS.RegisterEffect("scp035_corrosion", {
     think = function(self, ply, tier, args)
         if CLIENT then return end
         local dmg = DamageInfo()
-        dmg:SetDamage(SWEP.CorrosionDamage)
+        dmg:SetDamage(CORROSION_DAMAGE)
         dmg:SetDamageType(DMG_ACID)
         if IsValid(self.attacker) and self.attacker:CheckSignature(self.signature) then dmg:SetAttacker(self.attacker) end
         ply:TakeDamageInfo(dmg)
