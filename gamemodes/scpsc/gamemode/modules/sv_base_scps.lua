@@ -372,4 +372,40 @@ hook.Add("RegisterSCP", "RegisterBaseSCPs", function()
         },
         buff_scale = 0.8,
     })
+
+    -- SCP-001-S "Sans" - The Judge (Support SCP)
+    RegisterSCP("SCP001S", "models/player/skeleton.mdl", "weapon_scp_001s", {
+        jump_power = 200,
+        prep_freeze = true,
+        no_select = true,
+        dynamic_spawn = true,
+        no_chase = true,
+        no_damage_forces = true,
+    }, {
+        base_health = {
+            var = 1,
+            min = 1,
+            max = 1
+        },
+        max_health = {
+            var = 1,
+            min = 1,
+            max = 1
+        },
+        base_speed = {
+            var = 200,
+            min = 180,
+            max = 220
+        },
+        buff_scale = 0.1,
+        prot_scale = 0.1,
+    }, nil, function(ply)
+        -- Initialize damage tracking for all players
+        for _, p in ipairs(player.GetAll()) do
+            if not p:GetProperty("sans_damage_dealt") then
+                p:SetProperty("sans_damage_dealt", 0)
+            end
+        end
+        ply:SetProperty("escape_override", false)
+    end)
 end)

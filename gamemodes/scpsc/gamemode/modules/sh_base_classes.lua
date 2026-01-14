@@ -57,6 +57,19 @@ hook.Add("SLCRegisterClassGroups", "BaseGroups", function()
         if not IsValid(round) then return false end
         return round:GetTime() - round:GetRemainingTime() >= 120
     end)
+
+    -- SCP-001-S "Sans" - The Judge (spawns after 5 minutes)
+    AddSupportGroup("scp_001s", 5, SPAWN_SUPPORT_001S, 1, function()
+        SetRoundProperty("scp_001s_spawned", true)
+        for i, v in ipairs(player.GetAll()) do
+            if v:SCPTeam() ~= TEAM_SPEC then v:ChatPrint("[ALERT] Anomalous entity designated 'The Judge' has manifested. All personnel with high aggression levels are advised to proceed with caution.") end
+        end
+    end, function()
+        if GetRoundProperty("scp_001s_spawned") then return false end
+        local round = GetTimer("SLCRound")
+        if not IsValid(round) then return false end
+        return round:GetTime() - round:GetRemainingTime() >= 300 -- Spawns after 5 minutes
+    end)
 end)
 
 --BASE_WALK_SPEED = 100
@@ -923,6 +936,28 @@ hook.Add("SLCRegisterPlayerClasses", "BaseClasses", function()
         tier = 0,
         callback = function(ply, class)
             local scp = GetSCP("SCP1987J")
+            if scp then scp:SetupPlayer(ply, true, ply:GetPos()) end
+        end
+    })
+
+    --[[-------------------------------------------------------------------------
+	SCP-001-S "Sans" (The Judge)
+	---------------------------------------------------------------------------]]
+    RegisterSupportClass("scp_001s_sans", "scp_001s", "", {
+        team = TEAM_SCP,
+        weapons = {},
+        ammo = {},
+        chip = "",
+        omnitool = true,
+        health = 100,
+        walk_speed = 100,
+        run_speed = 225,
+        sanity = 75,
+        vest = nil,
+        max = 0,
+        tier = 0,
+        callback = function(ply, class)
+            local scp = GetSCP("SCP001S")
             if scp then scp:SetupPlayer(ply, true, ply:GetPos()) end
         end
     })
