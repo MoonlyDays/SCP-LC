@@ -294,6 +294,7 @@ effects.frightened = "Frightened"
 effects.scp1987j_blackout = "Blackout"
 effects.scp808j_deafened = "Deafened"
 effects.scp808j_canceled = "Canceled"
+effects.scp035_corrosion = "Corrosion"
 --[[-------------------------------------------------------------------------
 Class viewer
 ---------------------------------------------------------------------------]]
@@ -761,6 +762,7 @@ classes.SCP24273 = "SCP-2427-3"
 classes.SCP808J = "SCP-808-J"
 classes.SCP1987J = "SCP-1987-J"
 classes.SCP1983J = "SCP-1983-J"
+classes.SCP035 = "SCP-035"
 classes.scp_1987j_freddy = "SCP-1987-J"
 classes.classd = "Class D"
 classes.veterand = "Class D Veteran"
@@ -957,6 +959,10 @@ lang.CLASS_OBJECTIVES = {
 - Use audio attack to disorient enemies]],
     scp_1987j_freddy = [[- Cooperate with other SCPs
 - Hunt down personnel with jumpscare attacks]],
+    SCP035 = [[- Escape from the facility
+- Cooperate with Class-D personnel
+- Use your corrosive touch against enemies
+- Pick up and use items to aid your escape]],
 }
 
 lang.CLASS_DESCRIPTION = {
@@ -2856,6 +2862,16 @@ wep.SCP1983J = {
         outside_buff = {
             name = "The Man Behind the Slaughter",
             info = "Reduces damage penalty when outside the facility",
+        },
+    },
+}
+
+wep.SCP035 = {
+    skills = {
+        _overview = {"attack"},
+        attack = {
+            name = "Corrosive Touch",
+            dsc = "Strike an enemy with your corrosive touch, dealing damage and applying a corrosion effect that deals damage over time and slows the target",
         },
     },
 }

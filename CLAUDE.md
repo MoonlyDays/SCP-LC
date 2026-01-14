@@ -354,10 +354,222 @@ SLCVersion(signature)  -- e.g., "b001101r2"
 **IMPORTANT:** Add new SCPs directly to the main gamemode files, NOT in separate `lua/autorun/` files. Separate autorun files may not load in the correct order and can cause registration failures.
 
 **Required files to modify:**
-1. `modules/sv_base_scps.lua` - Add `RegisterSCP()` call
-2. `mapconfigs/gm_site19.lua` - Add spawn position (e.g., `SPAWN_SCP_XXXX`)
-3. `languages/english.lua` - Add class name, objectives, weapon descriptions, effects
-4. `entities/weapons/weapon_scp_xxxx.lua` - Create the SWEP
+1. `entities/weapons/weapon_scp_xxxx.lua` - Create the SWEP (weapon/abilities)
+2. `modules/sv_base_scps.lua` - Add `RegisterSCP()` call inside the hook
+3. `mapconfigs/gm_site19.lua` - Add spawn position (e.g., `SPAWN_SCPXXXX`)
+4. `languages/english.lua` - Add class name, objectives, weapon descriptions, effects
+
+#### Step 1: Create the SWEP (`entities/weapons/weapon_scp_xxxx.lua`)
+
+```lua
+SWEP.Base = "weapon_scp_base"
+SWEP.PrintName = "SCP-XXX"
+SWEP.HoldType = "normal"  -- or "knife", "melee"
+SWEP.DisableDamageEvent = true
+SWEP.ScoreOnDamage = true
+SWEP.ScoreOnKill = true
+
+-- Custom attack parameters
+SWEP.AttackCooldown = 2
+SWEP.AttackRange = 75
+SWEP.AttackDamage = 25
+
+function SWEP:SetupDataTables()
+    self:CallBaseClass("SetupDataTables")
+    -- Add networked variables: self:NetworkVar("Type", "Name")
+end
+
+function SWEP:Initialize()
+    self:SetHoldType(self.HoldType)
+    self:InitializeLanguage("SCPXXXX")  -- Must match language key
+    self:InitializeHUD()
+end
+
+function SWEP:Think()
+    if CLIENT or ROUND.preparing or ROUND.post then return end
+    -- Server-side think logic
+end
+
+-- Primary attack with trace
+local attack_trace = {}
+attack_trace.mask = MASK_SHOT
+attack_trace.output = attack_trace
+function SWEP:PrimaryAttack()
+    if CLIENT or ROUND.preparing or ROUND.post then return end
+    local ct = CurTime()
+    local owner = self:GetOwner()
+
+    self:SetNextPrimaryFire(ct + self.AttackCooldown)
+
+    attack_trace.start = owner:GetShootPos()
+    attack_trace.endpos = attack_trace.start + owner:GetAimVector() * self.AttackRange
+    attack_trace.filter = owner
+
+    owner:LagCompensation(true)
+    util.TraceLine(attack_trace)
+    owner:LagCompensation(false)
+
+    local ent = attack_trace.Entity
+    if not IsValid(ent) then return end
+
+    if not ent:IsPlayer() then
+        self:SCPDamageEvent(ent, 50)  -- Damage to props/doors
+        return
+    end
+
+    if not self:CanTargetPlayer(ent) then return end
+
+    -- Deal damage
+    local dmg = DamageInfo()
+    dmg:SetDamage(self.AttackDamage)
+    dmg:SetDamageType(DMG_SLASH)
+    dmg:SetAttacker(owner)
+    dmg:SetInflictor(self)
+    ent:TakeDamageInfo(dmg)
+
+    -- Optional: Apply effect
+    ent:ApplyEffect("effect_name", owner)
+end
+
+function SWEP:OnPlayerKilled(ply)
+    AddRoundStat("xxx")  -- Track kills for statistics
+end
+
+-- Optional: Register custom effects
+EFFECTS.RegisterEffect("my_effect", {
+    duration = 8,
+    stacks = 0,
+    tiers = {
+        { icon = Material("slc/hud/effects/icon.png") },
+    },
+    cantarget = scp_spec_filter,
+    begin = function(self, ply, tier, args, refresh)
+        if IsValid(args[1]) then
+            self.attacker = args[1]
+            self.signature = args[1]:TimeSignature()
+        end
+    end,
+    finish = function(self, ply, tier, args, interrupt) end,
+    think = function(self, ply, tier, args)
+        if CLIENT then return end
+        -- Periodic damage/effects
+    end,
+    wait = 1,  -- Think interval in seconds
+})
+
+-- Client HUD
+if CLIENT then
+    local hud = SCPHUDObject("SCPXXXX", SWEP)
+    hud:AddCommonSkills()
+    hud:AddSkill("attack"):SetButton("attack")
+        :SetMaterial("slc/hud/scp/xxx/attack.png", "smooth")
+        :SetCooldownFunction("GetNextPrimaryFire")
+end
+
+-- Sounds
+sound.Add{
+    name = "SCPXXX.Attack",
+    sound = "path/to/sound.wav",
+    volume = 1,
+    level = 75,
+    pitch = 100,
+    channel = CHAN_WEAPON,
+}
+```
+
+#### Step 2: Register the SCP (`modules/sv_base_scps.lua`)
+
+Add inside the `RegisterSCP` hook (around line 347):
+
+```lua
+RegisterSCP("SCPXXXX", "models/path/to/model.mdl", "weapon_scp_xxxx", {
+    -- Static stats (not modifiable in config)
+    jump_power = 200,
+    prep_freeze = true,      -- Frozen during preparation phase
+    scp_human = true,        -- Can pick up and use items like humans
+    can_interact = true,     -- Can interact with doors/buttons normally
+    allow_chat = true,       -- Can use voice/text chat
+    no_chase = true,         -- Doesn't trigger chase mechanic
+    no_ragdoll = true,       -- No ragdoll on death
+}, {
+    -- Dynamic stats (can be modified in data/slc/scp_override.txt)
+    base_health = {
+        var = 1500,
+        min = 1200,
+        max = 1800
+    },
+    max_health = {
+        var = 1500,
+        min = 1200,
+        max = 1800
+    },
+    base_speed = {
+        var = 180,
+        min = 160,
+        max = 200
+    },
+    buff_scale = 0.8,
+}, nil, function(ply)
+    -- Optional post-setup callback
+end)
+```
+
+**Key static stats flags:**
+- `scp_human = true` - **Critical for humanoid SCPs** - bypasses SCP item pickup restrictions, allows using weapons/keycards/medical items
+- `can_interact = true` - Can use doors and buttons normally
+- `prep_freeze = true` - Frozen during round preparation
+- `allow_chat = true` - Can communicate via voice/text
+- `no_chase = true` - Doesn't trigger chase music/effects
+- `no_ragdoll = true` - No ragdoll on death
+- `no_select = true` - Cannot be randomly selected (for support SCPs)
+- `dynamic_spawn = true` - Spawns mid-round (for support SCPs)
+
+#### Step 3: Add Spawn Position (`mapconfigs/gm_site19.lua`)
+
+```lua
+SPAWN_SCPXXXX = Vector(x, y, z)
+```
+
+#### Step 4: Add Language Strings (`languages/english.lua`)
+
+```lua
+-- In classes section (around line 763)
+classes.SCPXXXX = "SCP-XXX"
+
+-- In CLASS_OBJECTIVES section (around line 960)
+SCPXXXX = [[- Escape from the facility
+- Your objectives here]],
+
+-- In effects section (around line 296)
+effects.my_effect = "Effect Name"
+
+-- In wep section (around line 2867)
+wep.SCPXXXX = {
+    skills = {
+        _overview = {"attack"},
+        attack = {
+            name = "Attack Name",
+            dsc = "Attack description",
+        },
+    },
+}
+```
+
+#### Example: SCP-035 (Humanoid SCP with Item Usage)
+
+SCP-035 demonstrates a humanoid SCP that can use items like regular players:
+
+- **Files created/modified:**
+  - `entities/weapons/weapon_scp_035.lua` - Corrosive touch attack with DOT effect
+  - `modules/sv_base_scps.lua` - Registration with `scp_human = true`
+  - `mapconfigs/gm_site19.lua` - Spawn position
+  - `languages/english.lua` - All language strings
+
+- **Key features:**
+  - `scp_human = true` enables item pickup (keycards, weapons, medical)
+  - Custom corrosion effect with slow and damage over time
+  - Allied with Class-D (shared escape goal), neutral to CI
+  - Standard SCP escape win condition
 
 **For Support SCPs** (spawn mid-round like SCP-1987-J):
 1. Also add to `modules/sh_base_classes.lua`:

@@ -344,4 +344,31 @@ hook.Add("RegisterSCP", "RegisterBaseSCPs", function()
         },
         buff_scale = 0.85,
     })
+
+    -- SCP-035 - Possessive Mask
+    RegisterSCP("SCP035", "models/player/d_class/d_class.mdl", "weapon_scp_035", {
+        jump_power = 200,
+        prep_freeze = true,
+        scp_human = true,
+        can_interact = true,
+        allow_chat = true,
+        no_chase = true,
+    }, {
+        base_health = {
+            var = 1500,
+            min = 1200,
+            max = 1800
+        },
+        max_health = {
+            var = 1500,
+            min = 1200,
+            max = 1800
+        },
+        base_speed = {
+            var = 180,
+            min = 160,
+            max = 200
+        },
+        buff_scale = 0.8,
+    })
 end)
