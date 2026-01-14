@@ -763,8 +763,6 @@ classes.SCP808J = "SCP-808-J"
 classes.SCP1987J = "SCP-1987-J"
 classes.SCP1983J = "SCP-1983-J"
 classes.SCP035 = "SCP-035"
-classes.SCP001S = "SCP-001-S"
-classes.scp_001s_sans = "SCP-001-S"
 classes.scp_1987j_freddy = "SCP-1987-J"
 classes.classd = "Class D"
 classes.veterand = "Class D Veteran"
@@ -965,16 +963,6 @@ lang.CLASS_OBJECTIVES = {
 - Cooperate with Class-D personnel
 - Use your corrosive touch against enemies
 - Pick up and use items to aid your escape]],
-    SCP001S = [[- Hunt down players who have dealt significant damage
-- Damage you take depletes your stamina instead of health
-- Players are marked by color: Green (innocent), Yellow (sinner), Red (guilty)
-- Sinful players receive multi-hit attacks and bleeding
-- Use teleportation strategically (costs stamina)]],
-    scp_001s_sans = [[- Hunt down players who have dealt significant damage
-- Damage you take depletes your stamina instead of health
-- Players are marked by color: Green (innocent), Yellow (sinner), Red (guilty)
-- Sinful players receive multi-hit attacks and bleeding
-- Use teleportation strategically (costs stamina)]],
 }
 
 lang.CLASS_DESCRIPTION = {
@@ -2884,56 +2872,6 @@ wep.SCP035 = {
         attack = {
             name = "Corrosive Touch",
             dsc = "Strike an enemy with your corrosive touch, dealing damage and applying a corrosion effect that deals damage over time and slows the target",
-        },
-    },
-}
-
-wep.SCP001S = {
-    name = "SCP-001-S",
-    desc = "Sans - The Judge. An anomalous entity that hunts down those who have caused harm.",
-    skills = {
-        stamina = {
-            name = "Determination",
-            dsc = "Your stamina acts as your health. When stamina depletes, you die. Regenerates slowly over time.",
-        },
-        bone_attack = {
-            name = "Bone Attack",
-            dsc = "Fire a bone projectile that deals 1 damage. Against sinful targets (200+ damage dealt), hits multiple times and applies bleeding.",
-        },
-        gaster_blaster = {
-            name = "Gaster Blaster",
-            dsc = "Summon a Gaster Blaster that fires a powerful beam after a short charge. Deals area damage to all players in its path.",
-        },
-        teleport = {
-            name = "Shortcut",
-            dsc = "Teleport to the location you're aiming at. Costs 100 stamina. Press G to enter teleport mode, then left-click to teleport.",
-        },
-    },
-    upgrades = {
-        parse_description = true,
-        bone1 = {
-            name = "Bad Time I",
-            info = "Upgrades your bone attack\n\t- Cooldown reduced by [-bone_cd]",
-        },
-        bone2 = {
-            name = "Bad Time II",
-            info = "Upgrades your bone attack\n\t- Damage increased by [+bone_dmg]",
-        },
-        blaster1 = {
-            name = "Megalovania I",
-            info = "Upgrades your Gaster Blaster\n\t- Cooldown reduced by [-blaster_cd]",
-        },
-        blaster2 = {
-            name = "Megalovania II",
-            info = "Upgrades your Gaster Blaster\n\t- Damage increased by [+blaster_dmg]",
-        },
-        teleport1 = {
-            name = "Shortcuts",
-            info = "Upgrades your teleport ability\n\t- Cooldown reduced by [-teleport_cd]\n\t- Stamina cost reduced by [-teleport_cost]",
-        },
-        outside_buff = {
-            name = "Judgement Hall",
-            info = "Reduces damage penalty when outside the facility",
         },
     },
 }
