@@ -286,19 +286,6 @@ hook.Add("SLCUseOverride", "SLCButtonController", function(ply, ent, data)
     if cached then return true, nil, SLC_BUTTON_CONTROLLERS[cached[1]] end
 end)
 
---[[hook.Add( "AcceptInput", "SLCButtonController", function( ent, input, activator, caller, value )
-	print( ent, input, activator, caller, value )
-	if input == "Use" then
-		local cached = SLC_CONTROLLERS_CACHE[ent]
-		if cached then
-			local data = SLC_BUTTON_CONTROLLERS[cached[1]]
-
-			SLC_CONTROLLERS_USE_TIME[data.name] = CurTime() + data.cooldown
-			SLC_CONTROLLERS_LAST_SETID[data.name] = cached[2]
-			print( "OK", cached[2] )
-		end
-	end
-end )]]
 --[[-------------------------------------------------------------------------
 SynchronousEventListener
 ---------------------------------------------------------------------------]]

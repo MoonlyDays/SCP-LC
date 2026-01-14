@@ -441,7 +441,7 @@ function GM:SpawnItems()
     --[[-------------------------------------------------------------------------
 	Cameras
 	---------------------------------------------------------------------------]]
-    for i, v in ipairs(CCTV) do
+    for i, v in ipairs(CCTV or {}) do
         local cctv = ents.Create("slc_cctv")
         if IsValid(cctv) then
             cctv:SetPos(v.pos)
