@@ -124,7 +124,8 @@ function SWEP:UpdateLightStyle()
     if not IsValid(light) then return end
     local bat = self:GetBattery()
     local style = 0 --"m"
-    if bat <= 3 then     --[[if bat <= 1 then
+    if bat <= 3 then
+        --[[if bat <= 1 then
 		//style = "llelblkclekkelebeeflellfe"
 	else]]
         --style = "mmnjkmkmmkkjmkmmnjnkmmj"
