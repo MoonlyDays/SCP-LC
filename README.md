@@ -1,4 +1,4 @@
-# SCP: Lost Control (Modified Version)
+# SCP: Slop Control (Modified Version)
 
 **This is a modified/alternative version of the original SCP: Lost Control gamemode.**
 
