@@ -935,7 +935,7 @@ hook.Add("SLCRegisterPlayerClasses", "BaseClasses", function()
         run_speed = 225,
         sanity = 75,
         vest = nil,
-        max = 0,
+        max = 1,
         tier = 0,
         callback = function(ply, class)
             local scp = GetSCP("SCP1987J")
