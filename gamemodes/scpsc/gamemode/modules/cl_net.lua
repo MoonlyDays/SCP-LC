@@ -196,6 +196,7 @@ end)
 
 net.Receive("SLCHitMarker", function(len) ShowHitMarker() end)
 net.Receive("SLCDamageIndicator", function(len) ShowDamageIndicator(net.ReadUInt(10), net.ReadFloat(), net.ReadFloat()) end)
+net.Receive("SLCDamageNumbers", function(len) ShowDamageNumber(net.ReadUInt(10), net.ReadVector()) end)
 net.ReceivePing("AFKSlayWarning", function(data) SLCAFKWarning = true end)
 --[[-------------------------------------------------------------
 SCP VARS

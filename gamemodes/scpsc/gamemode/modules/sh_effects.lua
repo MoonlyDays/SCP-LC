@@ -1614,7 +1614,6 @@ Karma Bleeding (SCP-001-S)
 ---------------------------------------------------------------------------]]
 local karma_decal_up = Vector(0, 0, 10)
 local karma_decal_down = Vector(0, 0, -30)
-
 EFFECTS.RegisterEffect("karma_bleed", {
     duration = 12,
     stacks = 2, -- Tier stacking - damage increases with tier
@@ -1642,31 +1641,22 @@ EFFECTS.RegisterEffect("karma_bleed", {
             ply:PushSpeed(speed, speed, -1, "SLC_KarmaBleed", 1)
         end
     end,
-    finish = function(self, ply, tier, args, interrupt)
-        if SERVER then ply:PopSpeed("SLC_KarmaBleed") end
-    end,
+    finish = function(self, ply, tier, args, interrupt) if SERVER then ply:PopSpeed("SLC_KarmaBleed") end end,
     think = function(self, ply, tier, args)
         if CLIENT then return end
-
         local att = args[1]
         local dmg = DamageInfo()
         dmg:SetDamage(tier * 2) -- 2 damage per tier per tick
         dmg:SetDamageType(DMG_DIRECT)
-        if IsValid(att) and att:IsPlayer() and att:CheckSignature(args[2]) then
-            dmg:SetAttacker(att)
-        end
+        if IsValid(att) and att:IsPlayer() and att:CheckSignature(args[2]) then dmg:SetAttacker(att) end
         ply:TakeDamageInfo(dmg)
-
         AddRoundStat("karma_bleed", tier * 2)
-
         -- Blood decals
         if self.next_decal and self.next_decal > CurTime() then return end
         self.next_decal = CurTime() + (3 - tier) * 0.5
-
         local pos = ply:GetPos()
         if self.last_decal and pos:DistToSqr(self.last_decal) < 2500 then return end
         self.last_decal = pos
-
         util.Decal("Blood", pos + karma_decal_up, pos + karma_decal_down, ply)
     end,
     wait = 1.5,
@@ -1679,7 +1669,6 @@ if CLIENT then
         local has_effect = ply.HasEffect and ply:HasEffect("karma_bleed")
         local target = has_effect and 1 or 0
         karma_bleed_intensity = Lerp(FrameTime() * 4, karma_bleed_intensity, target)
-
         if karma_bleed_intensity > 0.01 then
             local tier = ply:GetEffectTier("karma_bleed")
             -- Blue tint to indicate karmic judgment

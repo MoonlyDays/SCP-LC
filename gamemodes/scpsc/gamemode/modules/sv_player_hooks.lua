@@ -1,5 +1,4 @@
 ﻿SLC_CATCH_INPUT = SLC_CATCH_INPUT or {}
-
 function GM:PlayerInitialSpawn(ply)
     ply.playermeta = {}
     ply:DataTables()

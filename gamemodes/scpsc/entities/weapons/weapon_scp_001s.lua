@@ -1,30 +1,24 @@
-SWEP.Base = "weapon_scp_base"
+﻿SWEP.Base = "weapon_scp_base"
 SWEP.PrintName = "SCP-001-S"
 SWEP.HoldType = "normal"
 SWEP.ScoreOnDamage = true
 SWEP.ScoreOnKill = true
-
 -- Ability cooldowns and parameters
 SWEP.BoneAttackCooldown = 1
 SWEP.BoneAttackDamage = 1
 SWEP.BoneAttackRange = 500
 SWEP.BoneProjectileSpeed = 1500
-
 SWEP.BlasterCooldown = 5
 SWEP.BlasterDamage = 25
 SWEP.BlasterRange = 600
 SWEP.BlasterWidth = 50
-
 SWEP.TeleportCooldown = 120
 SWEP.TeleportStaminaCost = 100
-
-SWEP.MaxStamina = 500
+SWEP.MaxStamina = 2000
 SWEP.StaminaRegen = 2 -- Per second, very slow
-
 -- Sin thresholds
 SWEP.SinThresholdYellow = 50
 SWEP.SinThresholdRed = 100
-
 --[[
     SCP-001-S - The Judge
 
@@ -36,7 +30,6 @@ SWEP.SinThresholdRed = 100
     RMB - Gaster Blaster: Fire a devastating beam attack.
     Special - Shortcut: Teleport to a selected area. Consumes stamina.
 ]]
-
 function SWEP:SetupDataTables()
     self:CallBaseClass("SetupDataTables")
     self:NetworkVar("Float", "Stamina")
@@ -50,7 +43,6 @@ function SWEP:Initialize()
     self:SetHoldType(self.HoldType)
     self:InitializeLanguage("SCP001S")
     self:InitializeHUD()
-
     if SERVER then
         self:SetStamina(self.MaxStamina)
         self:SetMaxStaminaNet(self.MaxStamina)
@@ -61,7 +53,6 @@ function SWEP:Think()
     if ROUND.preparing or ROUND.post then return end
     local ct = CurTime()
     local owner = self:GetOwner()
-
     if SERVER then
         -- Regenerate stamina slowly
         if not self.NextStaminaRegen or self.NextStaminaRegen <= ct then
@@ -86,7 +77,6 @@ end
 function SWEP:GetPlayerSinLevel(ply)
     if not IsValid(ply) then return 0 end
     local damage = ply:GetProperty("scp001s_damage_dealt", 0)
-
     if damage >= self.SinThresholdRed then
         return 3 -- Red - Murderer
     elseif damage >= self.SinThresholdYellow then
@@ -110,68 +100,66 @@ end
 -- Update player outlines for the SCP owner
 function SWEP:UpdatePlayerOutlines(owner)
     if not IsValid(owner) then return end
-
-    -- This would need a custom networking system to show outlines to the SCP
-    -- For now, we'll use the existing property system
+    -- Build a table of player sin levels and send to the SCP owner
+    local sinData = {}
     for _, ply in ipairs(player.GetAll()) do
         if ply == owner or ply:SCPTeam() == TEAM_SPEC then continue end
         local sinLevel = self:GetPlayerSinLevel(ply)
-        ply:SetProperty("scp001s_sin_level", sinLevel)
+        sinData[ply:EntIndex()] = sinLevel
     end
+
+    -- Network sin levels to the SCP owner
+    net.Start("SCP001S_SinLevels")
+    net.WriteTable(sinData)
+    net.Send(owner)
+end
+
+if SERVER then util.AddNetworkString("SCP001S_SinLevels") end
+if CLIENT then
+    -- Store sin levels received from server
+    SCP001S_PlayerSinLevels = SCP001S_PlayerSinLevels or {}
+    net.Receive("SCP001S_SinLevels", function() SCP001S_PlayerSinLevels = net.ReadTable() end)
 end
 
 -- Primary Attack: Bone projectile
 local attack_trace = {}
 attack_trace.mask = MASK_SHOT
 attack_trace.output = attack_trace
-
 function SWEP:PrimaryAttack()
     if ROUND.preparing or ROUND.post then return end
     if self:GetTeleportMode() then return end
-
     self:SetNextPrimaryFire(CurTime() + self.BoneAttackCooldown * self:GetUpgradeMod("bone_cd", 1))
-
     if not SERVER then return end
-
     local owner = self:GetOwner()
     local spos = owner:GetShootPos()
     local dir = owner:GetAimVector()
-
     attack_trace.start = spos
     attack_trace.endpos = spos + dir * self.BoneAttackRange
     attack_trace.filter = owner
-
     owner:LagCompensation(true)
     util.TraceLine(attack_trace)
     owner:LagCompensation(false)
-
     -- Play bone attack sound
     owner:EmitSound("SCP001S.BoneAttack")
-
     -- Create visual effect (bone projectile trail)
     local effectdata = EffectData()
     effectdata:SetStart(spos)
     effectdata:SetOrigin(attack_trace.HitPos)
     effectdata:SetEntity(owner)
     util.Effect("SLC_SCP001S_Bone", effectdata, true, true)
-
     local ent = attack_trace.Entity
     if not IsValid(ent) then return end
-
     if not ent:IsPlayer() then
         self:SCPDamageEvent(ent, 50)
         return
     end
 
     if not self:CanTargetPlayer(ent) then return end
-
     local sinLevel = self:GetPlayerSinLevel(ent)
     local baseDamage = self.BoneAttackDamage * self:GetUpgradeMod("bone_dmg", 1)
-
     -- Calculate hits and effects based on sin level
     local hits = 1
     local bleedTier = 0
-
     if sinLevel >= 2 then
         hits = 3 -- Multi-hit for sinners
         bleedTier = 1 -- Light bleeding
@@ -190,12 +178,8 @@ function SWEP:PrimaryAttack()
     dmg:SetAttacker(owner)
     dmg:SetInflictor(self)
     ent:TakeDamageInfo(dmg)
-
     -- Apply karma bleeding effect
-    if bleedTier > 0 then
-        ent:ApplyEffect("karma_bleed", bleedTier, owner)
-    end
-
+    if bleedTier > 0 then ent:ApplyEffect("karma_bleed", bleedTier, owner) end
     AddRoundStat("001s_bone")
 end
 
@@ -210,19 +194,14 @@ function SWEP:SecondaryAttack()
 
     local ct = CurTime()
     if self:GetNextBlaster() > ct then return end
-
     self:SetNextBlaster(ct + self.BlasterCooldown * self:GetUpgradeMod("blaster_cd", 1))
     self:SetNextSecondaryFire(ct + 0.5)
-
     if not SERVER then return end
-
     local owner = self:GetOwner()
     local spos = owner:GetShootPos()
     local dir = owner:GetAimVector()
-
     -- Play blaster sound
     owner:EmitSound("SCP001S.GasterBlaster")
-
     -- Create beam effect
     local effectdata = EffectData()
     effectdata:SetStart(spos)
@@ -230,62 +209,46 @@ function SWEP:SecondaryAttack()
     effectdata:SetEntity(owner)
     effectdata:SetRadius(self.BlasterWidth)
     util.Effect("SLC_SCP001S_Blaster", effectdata, true, true)
-
     -- Damage all players in beam path
     local baseDamage = self.BlasterDamage * self:GetUpgradeMod("blaster_dmg", 1)
     local range = self.BlasterRange * self:GetUpgradeMod("blaster_range", 1)
     local width = self.BlasterWidth
-
     owner:LagCompensation(true)
     for _, ply in ipairs(player.GetAll()) do
         if ply == owner or not self:CanTargetPlayer(ply) then continue end
-
         -- Check if player is in beam path
         local plyPos = ply:GetPos() + Vector(0, 0, 40)
         local toPlayer = plyPos - spos
         local dist = toPlayer:Dot(dir)
-
         if dist < 0 or dist > range then continue end
-
         local closestPoint = spos + dir * dist
         local perpDist = (plyPos - closestPoint):Length()
-
         if perpDist > width then continue end
-
         local sinLevel = self:GetPlayerSinLevel(ply)
         local damage = baseDamage
-
         -- Bonus damage to sinners
-        if sinLevel >= 2 then
-            damage = damage * 1.5
-        end
-        if sinLevel >= 3 then
-            damage = damage * 2
-        end
-
+        if sinLevel >= 2 then damage = damage * 1.5 end
+        if sinLevel >= 3 then damage = damage * 2 end
         local dmg = DamageInfo()
         dmg:SetDamage(damage)
         dmg:SetDamageType(DMG_ENERGYBEAM)
         dmg:SetAttacker(owner)
         dmg:SetInflictor(self)
         ply:TakeDamageInfo(dmg)
-
         -- Apply karma bleeding to sinners
-        if sinLevel >= 2 then
-            ply:ApplyEffect("karma_bleed", sinLevel - 1, owner)
-        end
+        if sinLevel >= 2 then ply:ApplyEffect("karma_bleed", sinLevel - 1, owner) end
     end
-    owner:LagCompensation(false)
 
+    owner:LagCompensation(false)
     AddRoundStat("001s_blaster")
 end
 
 -- Special Attack: Teleport
+local PLAYER_HULL_MIN = Vector(-16, -16, 0)
+local PLAYER_HULL_MAX = Vector(16, 16, 72)
 function SWEP:SpecialAttack()
     if ROUND.preparing or ROUND.post then return end
-
     local ct = CurTime()
-
     if self:GetTeleportMode() then
         -- Execute teleport
         if self:GetNextTeleport() > ct then
@@ -308,7 +271,6 @@ function SWEP:SpecialAttack()
         local owner = self:GetOwner()
         local spos = owner:GetShootPos()
         local dir = owner:GetAimVector()
-
         -- Trace for teleport destination
         local tr = util.TraceLine({
             start = spos,
@@ -327,25 +289,61 @@ function SWEP:SpecialAttack()
             })
 
             if groundTr.Hit then
+                local teleportPos = groundTr.HitPos + Vector(0, 0, 1)
+                -- Check if there's enough space for the player at the destination
+                local hullTr = util.TraceHull({
+                    start = teleportPos,
+                    endpos = teleportPos,
+                    mins = PLAYER_HULL_MIN,
+                    maxs = PLAYER_HULL_MAX,
+                    filter = owner,
+                    mask = MASK_PLAYERSOLID
+                })
+
+                if hullTr.StartSolid or hullTr.AllSolid then
+                    -- Try to find a valid position nearby
+                    local foundPos = nil
+                    local offsets = {Vector(0, 0, 10), Vector(20, 0, 5), Vector(-20, 0, 5), Vector(0, 20, 5), Vector(0, -20, 5), Vector(0, 0, 20),}
+                    for _, offset in ipairs(offsets) do
+                        local testPos = teleportPos + offset
+                        local testTr = util.TraceHull({
+                            start = testPos,
+                            endpos = testPos,
+                            mins = PLAYER_HULL_MIN,
+                            maxs = PLAYER_HULL_MAX,
+                            filter = owner,
+                            mask = MASK_PLAYERSOLID
+                        })
+
+                        if not testTr.StartSolid and not testTr.AllSolid then
+                            foundPos = testPos
+                            break
+                        end
+                    end
+
+                    if not foundPos then
+                        self:HUDNotify("Cannot teleport there - not enough space!", 2)
+                        self:SetTeleportMode(false)
+                        return
+                    end
+
+                    teleportPos = foundPos
+                end
+
                 -- Consume stamina
                 self:SetStamina(self:GetStamina() - staminaCost)
                 self:SetNextTeleport(ct + self.TeleportCooldown * self:GetUpgradeMod("teleport_cd", 1))
-
                 -- Teleport effect at origin
                 owner:EmitSound("SCP001S.Teleport")
-
                 local effectdata = EffectData()
                 effectdata:SetOrigin(owner:GetPos())
                 util.Effect("SLC_SCP001S_Teleport", effectdata, true, true)
-
                 -- Move player
-                owner:SetPos(groundTr.HitPos + Vector(0, 0, 5))
-
+                owner:SetPos(teleportPos)
                 -- Teleport effect at destination
                 effectdata = EffectData()
                 effectdata:SetOrigin(owner:GetPos())
                 util.Effect("SLC_SCP001S_Teleport", effectdata, true, true)
-
                 AddRoundStat("001s_teleport")
             end
         end
@@ -375,22 +373,17 @@ end
 --[[-------------------------------------------------------------------------
 SCP Hooks - Stamina Shield & Damage Tracking
 ---------------------------------------------------------------------------]]
-
 -- Stamina Shield - redirect damage to stamina (only needs to run when SCP is active)
 SCPHook("SCP001S", "EntityTakeDamage", function(target, dmginfo)
     if not IsValid(target) or not target:IsPlayer() then return end
     if target:SCPClass() ~= CLASSES.SCP001S then return end
-
     local wep = target:GetSCPWeapon()
     if not IsValid(wep) or wep:GetClass() ~= "weapon_scp_001s" then return end
-
     local damage = dmginfo:GetDamage()
     local stamina = wep:GetStamina()
-
     if stamina > 0 then
         -- Absorb damage with stamina
         local newStamina = stamina - damage
-
         if newStamina <= 0 then
             -- Stamina depleted, allow remaining damage through
             wep:SetStamina(0)
@@ -421,15 +414,15 @@ if SERVER then
         -- Add round hook to track all damage during this round
         AddRoundHook("PostEntityTakeDamage", "SCP001S_DamageTracking", function(target, dmginfo, took)
             if not took then return end
-
             local attacker = dmginfo:GetAttacker()
             if not IsValid(attacker) or not attacker:IsPlayer() then return end
-
             -- Target must be a valid player (not spectator)
             if not IsValid(target) or not target:IsPlayer() then return end
             if target:SCPTeam() == TEAM_SPEC then return end
             if attacker:SCPTeam() == TEAM_SPEC then return end
-            if attacker == target then return end -- Ignore self-damage
+            if attacker == target then -- Ignore self-damage
+                return
+            end
 
             -- Track damage dealt by the attacker (regardless of their team or target's team)
             local currentDamage = attacker:GetProperty("scp001s_damage_dealt", 0)
@@ -540,52 +533,47 @@ SCP HUD
 ---------------------------------------------------------------------------]]
 if CLIENT then
     local sin_colors = {
-        [1] = Color(0, 255, 0),    -- Green - Innocent
-        [2] = Color(255, 255, 0),  -- Yellow - Sinner
-        [3] = Color(255, 0, 0),    -- Red - Murderer
+        [1] = Color(0, 255, 0), -- Green - Innocent
+        [2] = Color(255, 255, 0), -- Yellow - Sinner
+        [3] = Color(255, 0, 0), -- Red - Murderer
     }
 
     local hud = SCPHUDObject("SCP001S", SWEP)
     hud:AddCommonSkills()
-
     hud:AddSkill("bone_attack"):SetButton("attack"):SetMaterial("slc/hud/scp/001s/bone.png", "smooth"):SetCooldownFunction("GetNextPrimaryFire")
     hud:AddSkill("gaster_blaster"):SetButton("attack2"):SetMaterial("slc/hud/scp/001s/blaster.png", "smooth"):SetCooldownFunction("GetNextBlaster")
     hud:AddSkill("shortcut"):SetButton("scp_special"):SetMaterial("slc/hud/scp/001s/teleport.png", "smooth"):SetCooldownFunction("GetNextTeleport")
-
     -- Stamina bar (main resource)
-    hud:AddBar("stamina"):SetMaterial("slc/hud/scp/001s/stamina.png", "smooth"):SetColor(Color(100, 150, 255)):SetTextFunction(function(swep)
-        return math.floor(swep:GetStamina()) .. " / " .. math.floor(swep:GetMaxStaminaNet())
-    end):SetProgressFunction(function(swep)
-        return swep:GetStamina() / swep:GetMaxStaminaNet()
-    end)
-
+    hud:AddBar("stamina"):SetMaterial("slc/hud/scp/001s/stamina.png", "smooth"):SetColor(Color(100, 150, 255)):SetTextFunction(function(swep) return math.floor(swep:GetStamina()) .. " / " .. math.floor(swep:GetMaxStaminaNet()) end):SetProgressFunction(function(swep) return swep:GetStamina() / swep:GetMaxStaminaNet() end)
     -- Teleport mode indicator
-    hud:AddBar("teleport_mode"):SetMaterial("slc/hud/scp/001s/teleport.png", "smooth"):SetColor(Color(150, 100, 255)):SetTextFunction(function(swep)
-        return swep:GetTeleportMode() and "TELEPORT MODE" or ""
-    end):SetProgressFunction(function(swep)
-        return swep:GetTeleportMode() and 1 or 0
-    end):SetVisibleFunction(function(swep)
-        return swep:GetTeleportMode()
-    end)
-
-    -- Draw sin level outlines on players
+    hud:AddBar("teleport_mode"):SetMaterial("slc/hud/scp/001s/teleport.png", "smooth"):SetColor(Color(150, 100, 255)):SetTextFunction(function(swep) return swep:GetTeleportMode() and "TELEPORT MODE" or "" end):SetProgressFunction(function(swep) return swep:GetTeleportMode() and 1 or 0 end):SetVisibleFunction(function(swep) return swep:GetTeleportMode() end)
+    -- Draw sin level outlines on players (nearby and visible only)
+    local outline_range = 1500 -- Maximum distance to see outlines
+    local outline_trace = {}
+    outline_trace.mask = MASK_VISIBLE_AND_NPCS
     hook.Add("PreDrawHalos", "SCP001S_SinOutlines", function()
         local ply = LocalPlayer()
         if not IsValid(ply) or ply:SCPClass() ~= CLASSES.SCP001S then return end
-
+        if not SCP001S_PlayerSinLevels then return end
+        local eye_pos = ply:EyePos()
+        outline_trace.start = eye_pos
+        outline_trace.filter = ply
         for sinLevel, color in pairs(sin_colors) do
             local players_at_level = {}
             for _, target in ipairs(player.GetAll()) do
                 if target == ply or target:SCPTeam() == TEAM_SPEC then continue end
-                local targetSin = target:GetProperty("scp001s_sin_level", 0)
-                if targetSin == sinLevel then
-                    table.insert(players_at_level, target)
-                end
+                -- Distance check
+                local target_pos = target:GetPos() + Vector(0, 0, 40)
+                if eye_pos:DistToSqr(target_pos) > outline_range * outline_range then continue end
+                -- Line of sight check
+                outline_trace.endpos = target_pos
+                local tr = util.TraceLine(outline_trace)
+                if tr.Hit and tr.Entity ~= target then continue end
+                local targetSin = SCP001S_PlayerSinLevels[target:EntIndex()] or 1
+                if targetSin == sinLevel then table.insert(players_at_level, target) end
             end
 
-            if #players_at_level > 0 then
-                halo.Add(players_at_level, color, 2, 2, 1, true, true)
-            end
+            if #players_at_level > 0 then halo.Add(players_at_level, color, 2, 2, 1, true, true) end
         end
     end)
 end

@@ -100,8 +100,66 @@ hook.Add("SLCPostDrawHUD", "SLCDamage", function()
     end
 end)
 
+--[[-------------------------------------------------------------------------
+Damage numbers (floating damage text when dealing damage)
+---------------------------------------------------------------------------]]
+local dmg_numbers = {}
+local dmg_number_duration = 1.5
+local dmg_number_max = 16
+local dmg_number_rise_speed = 50
+function ShowDamageNumber(dmg, pos)
+    if not GetSettingsValue("hud_damage_numbers") then return end
+    if #dmg_numbers >= dmg_number_max then table.remove(dmg_numbers, 1) end
+    -- Add slight random offset to prevent overlap
+    local offset = Vector(math.random(-15, 15), math.random(-15, 15), math.random(0, 10))
+    table.insert(dmg_numbers, {
+        dmg = math.ceil(dmg),
+        pos = pos + offset,
+        start_time = RealTime(),
+        die_time = RealTime() + dmg_number_duration,
+    })
+end
+
+hook.Add("SLCPostDrawHUD", "SLCDamageNumbers", function()
+    if #dmg_numbers == 0 then return end
+    if not GetSettingsValue("hud_damage_numbers") then return end
+    local rt = RealTime()
+    local ply = LocalPlayer()
+    if not IsValid(ply) then return end
+    -- Remove expired entries
+    while #dmg_numbers > 0 and dmg_numbers[1].die_time <= rt do
+        table.remove(dmg_numbers, 1)
+    end
+
+    for _, data in ipairs(dmg_numbers) do
+        local elapsed = rt - data.start_time
+        local alpha = math.Clamp((data.die_time - rt) / dmg_number_duration, 0, 1)
+        -- Calculate floating position (rises over time)
+        local rise_offset = Vector(0, 0, elapsed * dmg_number_rise_speed)
+        local world_pos = data.pos + rise_offset
+        -- Convert to screen coordinates
+        local scr = world_pos:ToScreen()
+        if not scr.visible then continue end
+        -- Scale based on distance
+        local dist = world_pos:Distance(ply:EyePos())
+        local scale = math.Clamp(1 - (dist / 2000), 0.5, 1.5)
+        -- Draw damage number with outline
+        local text = tostring(data.dmg)
+        local font = "SCPHUDMedium"
+        local text_alpha = alpha * 255
+        -- Background/outline for readability
+        surface.SetFont(font)
+        local tw, th = surface.GetTextSize(text)
+        tw = tw * scale
+        th = th * scale
+        -- Draw shadow/outline
+        draw.SimpleTextOutlined(text, font, scr.x, scr.y, Color(255, 100, 100, text_alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color(0, 0, 0, text_alpha * 0.8))
+    end
+end)
+
 hook.Add("SLCRegisterSettings", "SLCSCPDamageHUDSettings", function()
     RegisterSettingsEntry("hud_hitmarker", "switch", true, nil, "hud_config")
     RegisterSettingsEntry("hud_hitmarker_mute", "switch", false, nil, "hud_config")
     RegisterSettingsEntry("hud_damage_indicator", "switch", true, nil, "hud_config")
+    RegisterSettingsEntry("hud_damage_numbers", "switch", true, nil, "hud_config")
 end)

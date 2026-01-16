@@ -64,9 +64,7 @@ hook.Add("SLCRegisterClassGroups", "BaseGroups", function()
         SetRoundProperty("scp_001s_spawned", true)
         -- No PA announcement - The Judge appears silently
         for i, v in ipairs(player.GetAll()) do
-            if v:SCPTeam() ~= TEAM_SPEC then
-                v:ChatPrint("[???] You feel like you're being watched...")
-            end
+            if v:SCPTeam() ~= TEAM_SPEC then v:ChatPrint("[???] You feel like you're being watched...") end
         end
     end, function()
         if GetRoundProperty("scp_001s_spawned") then return false end
@@ -959,7 +957,7 @@ hook.Add("SLCRegisterPlayerClasses", "BaseClasses", function()
         run_speed = 225,
         sanity = 75,
         vest = nil,
-        max = 0,
+        max = 1,
         tier = 0,
         callback = function(ply, class)
             local scp = GetSCP("SCP001S")

@@ -9,7 +9,6 @@ SWEP.AttackRange = 75
 SWEP.AttackDamage = 25
 SWEP.CorrosionDuration = 8
 SWEP.CorrosionDamage = 3
-
 local CORROSION_DURATION = SWEP.CorrosionDuration
 local CORROSION_DAMAGE = SWEP.CorrosionDamage
 function SWEP:SetupDataTables()

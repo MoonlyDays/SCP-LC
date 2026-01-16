@@ -305,6 +305,7 @@ end
 function ApplyDamageHUDEvents(target, dmg)
     local target_valid = IsValid(target) and target:IsPlayer()
     if not target.slc_dmg_ind and target_valid then target.slc_dmg_ind = {} end
+    if not target.slc_dmg_num and target_valid then target.slc_dmg_num = {} end
     local att = dmg:GetInflictor()
     if IsValid(att) then
         local owner = att:GetOwner()
@@ -327,6 +328,19 @@ function ApplyDamageHUDEvents(target, dmg)
         net.WriteFloat(0)
         net.Send(target)
     end
+
+    -- Send damage numbers to the attacker
+    if IsValid(att) and att:IsPlayer() and att ~= target and target_valid then
+        if not target.slc_dmg_num[att] then
+            target.slc_dmg_num[att] = {
+                dmg = 0,
+                pos = target:GetPos() + Vector(0, 0, 50)
+            }
+        end
+
+        target.slc_dmg_num[att].dmg = target.slc_dmg_num[att].dmg + dmg:GetDamage()
+        target.slc_dmg_num[att].pos = target:GetPos() + Vector(0, 0, 50)
+    end
 end
 
 function GM:PostEntityTakeDamage(ent, dmg, took)
@@ -337,15 +351,29 @@ end
 
 hook.Add("PlayerPostThink", "SLCDamageIndicator", function(ply)
     local tab = ply.slc_dmg_ind
-    if not tab then return end
-    for att, dmg in pairs(tab) do
-        tab[att] = nil
-        if not IsValid(att) then continue end
-        net.Start("SLCDamageIndicator")
-        net.WriteUInt(math.Clamp(math.ceil(dmg), 0, 1023), 10)
-        local dir = att:GetPos() - ply:GetPos()
-        net.WriteFloat(dir.x)
-        net.WriteFloat(dir.y)
-        net.Send(ply)
+    if tab then
+        for att, dmg in pairs(tab) do
+            tab[att] = nil
+            if not IsValid(att) then continue end
+            net.Start("SLCDamageIndicator")
+            net.WriteUInt(math.Clamp(math.ceil(dmg), 0, 1023), 10)
+            local dir = att:GetPos() - ply:GetPos()
+            net.WriteFloat(dir.x)
+            net.WriteFloat(dir.y)
+            net.Send(ply)
+        end
+    end
+
+    -- Send damage numbers to attackers
+    local dmg_num = ply.slc_dmg_num
+    if dmg_num then
+        for att, data in pairs(dmg_num) do
+            dmg_num[att] = nil
+            if not IsValid(att) then continue end
+            net.Start("SLCDamageNumbers")
+            net.WriteUInt(math.Clamp(math.ceil(data.dmg), 0, 1023), 10)
+            net.WriteVector(data.pos)
+            net.Send(att)
+        end
     end
 end)

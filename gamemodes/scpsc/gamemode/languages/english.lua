@@ -420,6 +420,7 @@ lang.settings = {
         hud_hitmarker = "Show hitmarkers",
         hud_hitmarker_mute = "Mute hitmarkers",
         hud_damage_indicator = "Show damage indicator",
+        hud_damage_numbers = "Show damage numbers",
         scp_hud_dmg_mod = "Show SCP received damage modificator",
         scp_nvmod = "Increase screen brightness when playing SCP",
         dynamic_fov = "Dynamic FOV",
