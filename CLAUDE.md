@@ -759,6 +759,10 @@ When adding a new SCP, ensure these entries exist in **all** language files:
    - `skills` table (using `dsc` for descriptions)
    - `upgrades` table (using `info` for descriptions)
 
+## Additional Documentation
+
+- `.ai/docs/SCPS.md` - Detailed documentation of all SCPs including descriptions, lore, abilities, stats, and notable characteristics
+
 ## Notes
 
 - **No automated testing** - Manual testing in-game required
