@@ -295,6 +295,7 @@ effects.scp1987j_blackout = "Blackout"
 effects.scp808j_deafened = "Deafened"
 effects.scp808j_canceled = "Canceled"
 effects.scp035_corrosion = "Corrosion"
+effects.karma_bleed = "Karmic Bleeding"
 --[[-------------------------------------------------------------------------
 Class viewer
 ---------------------------------------------------------------------------]]
@@ -763,7 +764,9 @@ classes.SCP808J = "SCP-808-J"
 classes.SCP1987J = "SCP-1987-J"
 classes.SCP1983J = "SCP-1983-J"
 classes.SCP035 = "SCP-035"
+classes.SCP001S = "SCP-001-S"
 classes.scp_1987j_freddy = "SCP-1987-J"
+classes.scp_001s_judge = "SCP-001-S"
 classes.classd = "Class D"
 classes.veterand = "Class D Veteran"
 classes.kleptod = "Class D Kleptomaniac"
@@ -2872,6 +2875,61 @@ wep.SCP035 = {
         attack = {
             name = "Corrosive Touch",
             dsc = "Strike an enemy with your corrosive touch, dealing damage and applying a corrosion effect that deals damage over time and slows the target",
+        },
+    },
+}
+
+wep.SCP001S = {
+    name = "SCP-001-S",
+    desc = "The Judge - A mysterious skeletal entity that manifests to pass judgment upon those who have committed violence",
+    skills = {
+        _overview = {"bone_attack", "gaster_blaster", "shortcut"},
+        bone_attack = {
+            name = "Bone Attack",
+            dsc = "Launch a bone projectile at your target. Against sinners (200+ damage dealt), attacks hit multiple times and apply Karmic Bleeding. Against murderers (500+ damage dealt), the effect is more severe.",
+        },
+        gaster_blaster = {
+            name = "Gaster Blaster",
+            dsc = "Fire a devastating beam that damages all enemies in its path. Deals bonus damage to sinners and applies Karmic Bleeding.",
+        },
+        shortcut = {
+            name = "Shortcut",
+            dsc = "Teleport to a location you're looking at. Consumes stamina. Press SPECIAL to enter teleport mode, then SPECIAL again to teleport. RMB to cancel.",
+        },
+        stamina = {
+            name = "Stamina Shield",
+            dsc = "Your stamina acts as a shield. While you have stamina, all damage is absorbed by it instead of your health. Stamina regenerates very slowly.",
+        },
+    },
+    upgrades = {
+        parse_description = true,
+        bone1 = {
+            name = "Bone I",
+            info = "Upgrades your bone attack\n\t• Cooldown reduced by [-bone_cd]",
+        },
+        bone2 = {
+            name = "Bone II",
+            info = "Upgrades your bone attack\n\t• Damage increased by [+bone_dmg]",
+        },
+        blaster1 = {
+            name = "Blaster I",
+            info = "Upgrades your Gaster Blaster\n\t• Cooldown reduced by [-blaster_cd]",
+        },
+        blaster2 = {
+            name = "Blaster II",
+            info = "Upgrades your Gaster Blaster\n\t• Damage increased by [+blaster_dmg]\n\t• Range increased by [+blaster_range]",
+        },
+        stamina1 = {
+            name = "Endurance I",
+            info = "Improves stamina management\n\t• Stamina regeneration increased by [+stamina_regen]",
+        },
+        stamina2 = {
+            name = "Endurance II",
+            info = "Improves stamina management\n\t• Teleport stamina cost reduced by [-teleport_cost]",
+        },
+        teleport1 = {
+            name = "Shortcut Master",
+            info = "Upgrades your teleport ability\n\t• Teleport cooldown reduced by [-teleport_cd]",
         },
     },
 }

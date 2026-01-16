@@ -372,4 +372,35 @@ hook.Add("RegisterSCP", "RegisterBaseSCPs", function()
         },
         buff_scale = 0.8,
     })
+
+    -- SCP-001-S - The Judge (Sans)
+    -- A mysterious skeletal entity that manifests to pass judgment upon those who have committed violence.
+    -- Support SCP that spawns mid-round to punish players who deal excessive damage.
+    RegisterSCP("SCP001S", "models/player/sans.mdl", "weapon_scp_001s", {
+        jump_power = 200,
+        prep_freeze = true,
+        no_select = true,      -- Support SCP - cannot spawn naturally
+        dynamic_spawn = true,  -- Spawns mid-round
+        allow_chat = true,
+        no_chase = true,
+        no_ragdoll = true,
+    }, {
+        base_health = {
+            var = 1,
+            min = 1,
+            max = 1
+        },
+        max_health = {
+            var = 1,
+            min = 1,
+            max = 1
+        },
+        base_speed = {
+            var = 180,
+            min = 160,
+            max = 200
+        },
+        buff_scale = 0.5,
+        prot_scale = 0,  -- No protection scaling since stamina is the defense
+    })
 end)

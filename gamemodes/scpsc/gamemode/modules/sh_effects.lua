@@ -1608,3 +1608,93 @@ if CLIENT then
         end
     end)
 end
+
+--[[-------------------------------------------------------------------------
+Karma Bleeding (SCP-001-S)
+---------------------------------------------------------------------------]]
+local karma_decal_up = Vector(0, 0, 10)
+local karma_decal_down = Vector(0, 0, -30)
+
+EFFECTS.RegisterEffect("karma_bleed", {
+    duration = 12,
+    stacks = 2, -- Tier stacking - damage increases with tier
+    tiers = {
+        {
+            icon = Material("slc/hud/effects/karma_bleed1.png")
+        },
+        {
+            icon = Material("slc/hud/effects/karma_bleed2.png")
+        },
+    },
+    cantarget = function(ply)
+        local team = ply:SCPTeam()
+        return team ~= TEAM_SPEC -- Can affect anyone except spectators, including SCPs
+    end,
+    begin = function(self, ply, tier, args, refresh)
+        if IsValid(args[1]) and args[1]:IsPlayer() then
+            self.args[1] = args[1] -- Store attacker
+            self.args[2] = args[1]:TimeSignature()
+        end
+
+        if SERVER then
+            ply:PopSpeed("SLC_KarmaBleed")
+            local speed = 1 - 0.1 * tier
+            ply:PushSpeed(speed, speed, -1, "SLC_KarmaBleed", 1)
+        end
+    end,
+    finish = function(self, ply, tier, args, interrupt)
+        if SERVER then ply:PopSpeed("SLC_KarmaBleed") end
+    end,
+    think = function(self, ply, tier, args)
+        if CLIENT then return end
+
+        local att = args[1]
+        local dmg = DamageInfo()
+        dmg:SetDamage(tier * 2) -- 2 damage per tier per tick
+        dmg:SetDamageType(DMG_DIRECT)
+        if IsValid(att) and att:IsPlayer() and att:CheckSignature(args[2]) then
+            dmg:SetAttacker(att)
+        end
+        ply:TakeDamageInfo(dmg)
+
+        AddRoundStat("karma_bleed", tier * 2)
+
+        -- Blood decals
+        if self.next_decal and self.next_decal > CurTime() then return end
+        self.next_decal = CurTime() + (3 - tier) * 0.5
+
+        local pos = ply:GetPos()
+        if self.last_decal and pos:DistToSqr(self.last_decal) < 2500 then return end
+        self.last_decal = pos
+
+        util.Decal("Blood", pos + karma_decal_up, pos + karma_decal_down, ply)
+    end,
+    wait = 1.5,
+})
+
+if CLIENT then
+    local karma_bleed_intensity = 0
+    hook.Add("SLCScreenMod", "SCP001SKarmaBleed", function(data)
+        local ply = LocalPlayer()
+        local has_effect = ply.HasEffect and ply:HasEffect("karma_bleed")
+        local target = has_effect and 1 or 0
+        karma_bleed_intensity = Lerp(FrameTime() * 4, karma_bleed_intensity, target)
+
+        if karma_bleed_intensity > 0.01 then
+            local tier = ply:GetEffectTier("karma_bleed")
+            -- Blue tint to indicate karmic judgment
+            data.colour = data.colour * (1 - 0.2 * karma_bleed_intensity)
+            data.add_b = (data.add_b or 0) + 0.05 * tier * karma_bleed_intensity
+            data.contrast = data.contrast * (1 + 0.1 * tier * karma_bleed_intensity)
+        end
+    end)
+
+    sound.Add({
+        name = "SLCEffects.KarmaBleed",
+        volume = 0.2,
+        level = 50,
+        pitch = {70, 90},
+        sound = "physics/flesh/flesh_squishy_impact_hard1.wav",
+        channel = CHAN_STATIC,
+    })
+end
